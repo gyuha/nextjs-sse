@@ -3,6 +3,7 @@
 import { useChattingProvider } from "@/app/sse/_components/chatting-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { fakerKO as faker } from '@faker-js/faker';
 import { useState } from "react";
 import { Message } from "./types";
 
@@ -31,6 +32,7 @@ async function sendBroadcastMessage(channelId:string, content: string) {
 
 export function MessageInput() {
   const [messageInput, setMessageInput] = useState("");
+  const [sendserInput, setSenderInput] = useState(faker.person.fullName());
   const { channelId } = useChattingProvider();
 
   const handleSendMessage = () => {
@@ -42,12 +44,15 @@ export function MessageInput() {
   return (
     <div className="p-4 border-t border-neutral-200">
       <div className="flex items-center space-x-2">
-        <Button variant="outline" size="icon" className="shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15.6 11.6L22 7v10l-6.4-4.5v-1z"/>
-            <rect width="15" height="10" x="2" y="7" rx="2"/>
-          </svg>
-        </Button>
+        <div className="shrink-0">
+          <Input
+            placeholder="이름를 입력하세요..."
+            value={sendserInput}
+            onChange={(e) => setSenderInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+            className="pr-10 w-24"
+          />
+        </div>
         <div className="relative flex-1">
           <Input
             placeholder="메시지를 입력하세요..."
