@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fakerKO as faker } from '@faker-js/faker';
 import { useState } from "react";
+import { sendMessage } from "./send-message-event";
 
 export function MessageInput() {
   const [messageInput, setMessageInput] = useState("");
   const [senderInput, setSenderInput] = useState(faker.person.fullName());
-  const { sendMessage, connectionStatus } = useChattingProvider();
+  const { channelId, connectionStatus } = useChattingProvider();
 
   const handleSendMessage = async () => {
     if (messageInput.trim() === "" || senderInput.trim() === "") return;
@@ -18,7 +19,7 @@ export function MessageInput() {
       return;
     }
     
-    await sendMessage(messageInput, senderInput);
+    await sendMessage(connectionStatus, channelId, messageInput, senderInput);
     setMessageInput("");
   };
 

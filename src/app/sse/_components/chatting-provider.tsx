@@ -6,12 +6,13 @@ interface ChattingProviderState {
   channelId: string;
   channels: Channel[];
   messages: Message[];
-  sendMessage: (content: string, sender: string) => Promise<void>;
+  name: string;
   connectionStatus: 'disconnected' | 'connecting' | 'connected';
 }
 
 interface ChattingContextType extends ChattingProviderState {
   setChannelId: React.Dispatch<React.SetStateAction<string>>;
+  setName: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const ChattingContext = createContext<ChattingContextType | undefined>(undefined);
@@ -24,6 +25,7 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   children,
 }: ChattingProviderProps) => {
   const [channelId, setChannelId] = useState<string>('general');
+  const [name, setName] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
   
@@ -200,14 +202,17 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   }, [channelId, createSSEConnection]);
 
   return (
-    <ChattingContext.Provider value={{ 
-      channelId, 
-      channels, 
-      messages, 
-      setChannelId, 
-      sendMessage,
-      connectionStatus
-    }}>
+    <ChattingContext.Provider
+      value={{
+        channelId,
+        channels,
+        messages,
+        name,
+        setChannelId,
+        setName,
+        connectionStatus,
+      }}
+    >
       {children}
     </ChattingContext.Provider>
   );

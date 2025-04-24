@@ -94,9 +94,11 @@ const connectionManager = SSEConnectionManager.getInstance();
 // GET 요청 처리 - SSE 연결 설정
 export async function GET(
   request: NextRequest,
-  { params }: { params: { channelId: string } }
+  context: { params: { channelId: string } }
 ) {
   try {
+    // Next.js 15에서는 params가 Promise이므로 await 사용
+    const params = await context.params;
     // channelId를 문자열로 명시적 변환하여 비동기 처리 이슈 해결
     const channelId = String(params.channelId || 'general');
     
@@ -197,9 +199,11 @@ export async function GET(
 // POST 요청 처리 - 메시지 브로드캐스트
 export async function POST(
   request: NextRequest,
-  { params }: { params: { channelId: string } }
+  context: { params: { channelId: string } }
 ) {
   try {
+    // Next.js 15에서는 params가 Promise이므로 await 사용
+    const params = await context.params;
     // channelId를 문자열로 명시적 변환하여 비동기 처리 이슈 해결
     const channelId = String(params.channelId || 'general');
     
@@ -266,8 +270,11 @@ export async function POST(
 // OPTIONS 요청 처리 - CORS 프리플라이트 요청 대응
 export async function OPTIONS(
   request: NextRequest,
-  { params }: { params: { channelId: string } }
+  context: { params: { channelId: string } }
 ) {
+  // Next.js 15에서는 params가 Promise이므로 await 사용
+  const params = await context.params;
+  
   return new NextResponse(null, {
     status: 204,
     headers: {
