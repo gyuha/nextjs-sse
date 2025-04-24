@@ -1,36 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ChannelList } from "./channel-list";
-import { DirectMessageList } from "./direct-message-list";
 import { ChannelHeader } from "./channel-header";
+import { ChannelList } from "./channel-list";
 import { MessageArea } from "./message-area";
 import { MessageInput } from "./message-input";
-import { Channel, DirectMessage, Message } from "./types";
 
 export function ChatLayout() {
-
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [currentChannel, setCurrentChannel] = useState<string>("general");
-
-  // 채널이 변경될 때마다 메시지 초기화
-  useEffect(() => {
-    setMessages([]);
-    // 실제 SSE 구현에서는 여기서 채널 구독을 변경
-  }, [currentChannel]);
-
-  // 메시지 전송 함수
-  const handleSendMessage = (content: string) => {
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      content,
-      sender: "You",
-      timestamp: new Date().toLocaleTimeString(),
-      channelId: currentChannel,
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
-  };
 
   return (
     <div className="flex h-screen bg-neutral-50 text-neutral-900">
