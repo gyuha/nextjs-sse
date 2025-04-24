@@ -94,7 +94,7 @@ const connectionManager = SSEConnectionManager.getInstance();
 // GET 요청 처리 - SSE 연결 설정
 export async function GET(
   request: NextRequest,
-  context: { params: { channelId: string } }
+  context: { params: Promise<{ channelId: string }> }
 ) {
   try {
     // Next.js 15에서는 params가 Promise이므로 await 사용
@@ -117,23 +117,9 @@ export async function GET(
           type: "connect", 
           message: "연결됨", 
           channelId: channelId,
-          connectionCount: connectionManager.getChannelConnectionCount(channelId),
-          timestamp: new Date().toISOString()
+          connectionCount: connectionManager.getChannelConnectionCount(channelId) 
         })}\n\n`;
-        
-        console.log(`채널 ${channelId} 연결 시작 메시지 전송: ${connectMessage}`);
         controller.enqueue(new TextEncoder().encode(connectMessage));
-        
-        // 즉시 첫 번째 핑 메시지 전송
-        const initialPingMessage = `data: ${JSON.stringify({ 
-          type: "ping", 
-          channelId: channelId,
-          message: "Initial ping",
-          timestamp: new Date().toISOString() 
-        })}\n\n`;
-        
-        console.log(`채널 ${channelId} 초기 핑 메시지 전송`);
-        controller.enqueue(new TextEncoder().encode(initialPingMessage));
         
         // 15초마다 핑 메시지 전송하여 연결 유지
         pingInterval = setInterval(() => {
@@ -143,7 +129,6 @@ export async function GET(
               channelId: channelId,
               timestamp: new Date().toISOString() 
             })}\n\n`;
-            console.log(`채널 ${channelId} 주기적 핑 메시지 전송`);
             controller.enqueue(new TextEncoder().encode(pingMessage));
           } catch (error) {
             console.error(`채널 ${channelId} 핑 메시지 전송 중 오류:`, error);
@@ -176,15 +161,11 @@ export async function GET(
       }
     });
 
-    // 응답 헤더 설정 시 더 명확한 로깅 추가
-    console.log(`채널 ${channelId} SSE 스트림 응답 헤더 설정 중`);
-    
     return new NextResponse(stream, {
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache, no-transform",
         "Connection": "keep-alive",
-        "X-Accel-Buffering": "no", // Nginx 버퍼링 비활성화
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization",
@@ -199,13 +180,11 @@ export async function GET(
 // POST 요청 처리 - 메시지 브로드캐스트
 export async function POST(
   request: NextRequest,
-  context: { params: { channelId: string } }
+  context: { params: Promise<{ channelId: string }> }
 ) {
   try {
-    // Next.js 15에서는 params가 Promise이므로 await 사용
-    const params = await context.params;
-    // channelId를 문자열로 명시적 변환하여 비동기 처리 이슈 해결
-    const channelId = String(params.channelId || 'general');
+    const params = await context.params
+    const channelId = String(params.channelId) || 'general';
     
     console.log(`채널 ${channelId}로 새 메시지 수신됨`);
     const message: Message = await request.json();
@@ -270,11 +249,8 @@ export async function POST(
 // OPTIONS 요청 처리 - CORS 프리플라이트 요청 대응
 export async function OPTIONS(
   request: NextRequest,
-  context: { params: { channelId: string } }
+  { params }: { params: { channelId: string } }
 ) {
-  // Next.js 15에서는 params가 Promise이므로 await 사용
-  const params = await context.params;
-  
   return new NextResponse(null, {
     status: 204,
     headers: {
