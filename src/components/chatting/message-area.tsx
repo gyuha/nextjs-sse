@@ -1,9 +1,8 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { Message } from "./types";
-import { MessageItem } from "./message-item";
 import { useChattingProvider } from "@/app/sse/_components/chatting-provider";
+import { useEffect, useRef } from "react";
+import { MessageItem } from "./message-item";
 
 export function MessageArea() {
   const messagesEndRef = useRef<HTMLDivElement>(null);

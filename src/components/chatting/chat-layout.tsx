@@ -5,22 +5,10 @@ import { ChannelList } from "./channel-list";
 import { DirectMessageList } from "./direct-message-list";
 import { ChannelHeader } from "./channel-header";
 import { MessageArea } from "./message-area";
-import { MessageInput } from "./message-linput";
+import { MessageInput } from "./message-input";
 import { Channel, DirectMessage, Message } from "./types";
 
 export function ChatLayout() {
-  const [channels, setChannels] = useState<Channel[]>([
-    { id: "general", name: "General" },
-    { id: "random", name: "Random", unreadCount: 3 },
-    { id: "support", name: "Support", unreadCount: 1 },
-    { id: "team", name: "Team" },
-  ]);
-
-  const [directMessages, setDirectMessages] = useState<DirectMessage[]>([
-    { id: "sarah", name: "Sarah Johnson", online: true, initial: "S" },
-    { id: "alex", name: "Alex Wong", online: true, initial: "A" },
-    { id: "maria", name: "Maria Garcia", online: true, initial: "M" },
-  ]);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentChannel, setCurrentChannel] = useState<string>("general");
@@ -53,28 +41,15 @@ export function ChatLayout() {
         </div>
         
         <div className="flex-1 overflow-y-auto">
-          <ChannelList 
-            channels={channels} 
-            currentChannel={currentChannel} 
-            onSelectChannel={setCurrentChannel} 
-          />
-          <DirectMessageList 
-            directMessages={directMessages} 
-            currentChannel={currentChannel} 
-            onSelectChannel={setCurrentChannel} 
-          />
+          <ChannelList />
         </div>
       </div>
 
       {/* Right chat area */}
       <div className="flex-1 flex flex-col">
-        <ChannelHeader 
-          currentChannel={currentChannel} 
-          channels={channels} 
-          directMessages={directMessages} 
-        />
+        <ChannelHeader />
         <MessageArea />
-        <MessageInput onSendMessage={handleSendMessage} />
+        <MessageInput />
       </div>
     </div>
   );

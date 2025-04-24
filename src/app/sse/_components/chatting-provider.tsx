@@ -1,26 +1,35 @@
-import { Message } from "@/components/chatting/types";
+'use client';
+import { Channel, Message } from "@/components/chatting/types";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-interface chattingProviderState {
+interface ChattingProviderState {
   channelId: string;
+  channels: Channel[];
   messages: Message[];
 }
 
-interface chattingProvider extends chattingProviderState {
+interface ChattingContextType extends ChattingProviderState {
   setChannelId: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const chattingProvider = createContext<chattingProvider | undefined>(undefined);
+const ChattingContext = createContext<ChattingContextType | undefined>(undefined);
 
-interface chattingProviderProps {
+interface ChattingProviderProps {
   children: React.ReactNode;
 }
 
-export const ChattingProvider: React.FC<chattingProviderProps> = ({
+export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   children,
-}: chattingProviderProps) => {
-  const [channelId, setChannelId] = useState<string>("");
+}: ChattingProviderProps) => {
+  const [channelId, setChannelId] = useState<string>('general');
   const [messages, setMessages] = useState<Message[]>([]);
+
+  const channels: Channel[] = [
+    { id: "general", name: "General" },
+    { id: "random", name: "Random", unreadCount: 3 },
+    { id: "support", name: "Support", unreadCount: 1 },
+    { id: "team", name: "Team" },
+  ]
 
   useEffect(() => {
     const eventSource = new EventSource("/api/sse");
@@ -44,17 +53,17 @@ export const ChattingProvider: React.FC<chattingProviderProps> = ({
   }, []);
 
   return (
-    <chattingProvider.Provider value={{ channelId, messages, setChannelId }}>
+    <ChattingContext.Provider value={{ channelId, channels, messages, setChannelId }}>
       {children}
-    </chattingProvider.Provider>
+    </ChattingContext.Provider>
   );
 };
 
 export const useChattingProvider = () => {
-  const context = useContext(chattingProvider);
+  const context = useContext(ChattingContext);
   if (!context) {
     throw new Error(
-      "usechatting-provider must be used within a chatting-provider"
+      "useChattingProvider must be used within a ChattingProvider"
     );
   }
   return context;

@@ -1,19 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useChattingProvider } from "@/app/sse/_components/chatting-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { Message } from "./types";
 
-interface MessageInputProps {
-  onSendMessage: (content: string) => void;
+
+async function sendBroadcastMessage(channelId:string, content: string) {
+
+    const newMessage: Message = {
+      channelId,
+      id: `msg-${Date.now()}`,
+      content,
+      sender: "You",
+      timestamp: new Date().toLocaleTimeString(),
+    };
+  const response = await fetch('/api/broadcast', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newMessage),
+  });
+
+  if (!response.ok) {
+    throw new Error('Broadcast failed');
+  }
 }
 
-export function MessageInput({ onSendMessage }: MessageInputProps) {
+export function MessageInput() {
   const [messageInput, setMessageInput] = useState("");
+  const { channelId } = useChattingProvider();
 
   const handleSendMessage = () => {
     if (messageInput.trim() === "") return;
-    onSendMessage(messageInput);
+    sendBroadcastMessage(channelId, messageInput)
     setMessageInput("");
   };
 
