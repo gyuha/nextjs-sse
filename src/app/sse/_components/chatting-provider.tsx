@@ -1,6 +1,6 @@
 'use client';
 import { Channel, Message } from "@/components/chatting/types";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 
 interface ChattingProviderState {
   channelId: string;
@@ -26,17 +26,30 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   const [channelId, setChannelId] = useState<string>('general');
   const [messages, setMessages] = useState<Message[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
+  
+  // 현재 이벤트 소스 참조를 저장하기 위한 ref
+  const eventSourceRef = useRef<EventSource | null>(null);
+  // 연결 재시도 타이머 참조
+  const retryTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // 연결 재시도 횟수
+  const retryCountRef = useRef<number>(0);
+  // 최대 재시도 횟수
+  const MAX_RETRY_COUNT = 3;
 
   const channels: Channel[] = [
     { id: "general", name: "General" },
     { id: "random", name: "Random", unreadCount: 3 },
     { id: "support", name: "Support", unreadCount: 1 },
     { id: "team", name: "Team" },
-  ]
+  ];
 
   // 메시지 전송 함수
   const sendMessage = async (content: string, sender: string) => {
     if (!content.trim() || !sender.trim()) return;
+    if (connectionStatus !== 'connected') {
+      console.warn('SSE 연결이 활성화되지 않았습니다. 메시지를 보낼 수 없습니다.');
+      return;
+    }
 
     const message: Partial<Message> = {
       channelId,
@@ -46,7 +59,7 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
     };
 
     try {
-      const response = await fetch('/api/sse', {
+      const response = await fetch(`/api/sse/${channelId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,54 +77,127 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
     }
   };
 
-  useEffect(() => {
-    console.log('SSE 연결 시도 중...');
+  // 채널별 SSE 연결 생성
+  const createSSEConnection = useCallback((targetChannelId: string) => {
+    console.log(`채널 ${targetChannelId}에 SSE 연결 시도 중...`);
     setConnectionStatus('connecting');
-
-    // EventSource 객체 생성
-    const eventSource = new EventSource('/api/sse');
-
-    // 연결 열림 이벤트 핸들러
-    eventSource.onopen = () => {
-      console.log('SSE 연결 성공');
-      setConnectionStatus('connected');
-    };
-
-    // 이벤트 메시지 처리
-    eventSource.onmessage = (event) => {
-      try {
-        const parsedData = JSON.parse(event.data);
-        console.log('SSE 메시지 수신:', parsedData);
-
-        // 메시지 유형에 따라 처리
-        if (parsedData.type === 'message' && parsedData.data) {
-          const newMessage = parsedData.data as Message;
-          setMessages((prevMessages) => [...prevMessages, newMessage]);
-        } else if (parsedData.type === 'connect') {
-          console.log('연결 성공 메시지:', parsedData);
-        } else if (parsedData.type === 'ping') {
-          console.log('핑 메시지 수신:', parsedData.timestamp);
+    
+    let hasReceivedMessage = false;
+    
+    try {
+      // 새 이벤트 소스 생성
+      const eventSource = new EventSource(`/api/sse/${targetChannelId}`);
+      
+      // 기본 onopen 핸들러 (표준 이벤트 핸들러)
+      eventSource.onopen = (event) => {
+        console.log(`채널 ${targetChannelId} SSE 연결 열림:`, event);
+        setConnectionStatus('connected');
+        retryCountRef.current = 0;
+      };
+      
+      // 기본 onmessage 핸들러 (표준 이벤트 핸들러)
+      eventSource.onmessage = (event) => {
+        try {
+          hasReceivedMessage = true;
+          const parsedData = JSON.parse(event.data);
+          console.log(`채널 ${targetChannelId} SSE 메시지 수신:`, parsedData);
+          
+          if (parsedData.type === 'connect') {
+            console.log('연결 성공 메시지:', parsedData);
+            setConnectionStatus('connected');
+          } else if (parsedData.type === 'message' && parsedData.data) {
+            const newMessage = parsedData.data as Message;
+            setMessages((prevMessages) => [...prevMessages, newMessage]);
+          } else if (parsedData.type === 'ping') {
+            console.log(`채널 ${targetChannelId} 핑 메시지 수신:`, parsedData.timestamp);
+          }
+        } catch (error) {
+          console.error(`메시지 파싱 오류:`, error, event.data);
         }
-      } catch (error) {
-        console.error('SSE 메시지 파싱 오류:', error, event.data);
+      };
+      
+      // 기본 onerror 핸들러 (표준 이벤트 핸들러)
+      eventSource.onerror = (error) => {
+        console.error(`채널 ${targetChannelId} SSE 연결 오류:`, error);
+        
+        // 메시지를 받았다가 연결이 끊어진 경우는 즉시 재연결 시도
+        if (hasReceivedMessage) {
+          setConnectionStatus('connecting');
+          eventSource.close();
+          setTimeout(() => {
+            createSSEConnection(targetChannelId);
+          }, 1000);
+          return;
+        }
+        
+        // 아직 메시지를 받지 못한 경우는 재시도 로직 적용
+        if (retryCountRef.current < MAX_RETRY_COUNT) {
+          setConnectionStatus('connecting');
+          eventSource.close();
+          
+          const retryDelay = Math.min(1000 * Math.pow(2, retryCountRef.current), 10000);
+          console.log(`채널 ${targetChannelId} SSE 연결 재시도 ${retryCountRef.current + 1}/${MAX_RETRY_COUNT} (${retryDelay}ms 후)`);
+          
+          retryTimerRef.current = setTimeout(() => {
+            retryCountRef.current++;
+            createSSEConnection(targetChannelId);
+          }, retryDelay);
+        } else {
+          setConnectionStatus('disconnected');
+          eventSource.close();
+          console.error(`채널 ${targetChannelId} SSE 연결 최대 재시도 횟수 초과`);
+        }
+      };
+      
+      // 이벤트 소스 반환
+      return eventSource;
+    } catch (error) {
+      console.error(`채널 ${targetChannelId} SSE 연결 생성 중 오류:`, error);
+      setConnectionStatus('disconnected');
+      return null;
+    }
+  }, []);
+
+  // 채널 변경 시 SSE 연결 관리
+  useEffect(() => {
+    // 기존 SSE 연결 정리
+    if (eventSourceRef.current) {
+      console.log(`기존 SSE 연결 종료 중...`);
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+    
+    // 기존 타이머 정리
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+    
+    // 재시도 카운트 초기화
+    retryCountRef.current = 0;
+    
+    // 채널 변경 시 메시지 배열 초기화
+    setMessages([]);
+    
+    // 새 SSE 연결 생성
+    console.log(`채널 ${channelId}에 새 SSE 연결 생성 중...`);
+    const eventSource = createSSEConnection(channelId);
+    eventSourceRef.current = eventSource;
+    
+    // 클린업 함수
+    return () => {
+      if (eventSourceRef.current) {
+        console.log(`컴포넌트 언마운트: SSE 연결 정리 중...`);
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+      
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
       }
     };
-
-    // 에러 처리
-    eventSource.onerror = (error) => {
-      console.error('SSE 연결 오류:', error);
-      setConnectionStatus('disconnected');
-      // 연결 재시도 로직을 여기에 추가할 수 있습니다
-      eventSource.close();
-    };
-
-    // 컴포넌트 언마운트 시 정리
-    return () => {
-      console.log('SSE 연결 종료 중...');
-      eventSource.close();
-      setConnectionStatus('disconnected');
-    };
-  }, []);
+  }, [channelId, createSSEConnection]);
 
   return (
     <ChattingContext.Provider value={{ 
