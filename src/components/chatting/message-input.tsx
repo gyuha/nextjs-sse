@@ -17,7 +17,7 @@ async function sendBroadcastMessage(channelId:string, content: string) {
       sender: "You",
       timestamp: new Date().toLocaleTimeString(),
     };
-  const response = await fetch('/api/broadcast', {
+  const response = await fetch('/api/sse', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

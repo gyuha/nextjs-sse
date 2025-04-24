@@ -10,7 +10,7 @@ export function MessageItem({ message }: MessageItemProps) {
   return (
     <div className="flex items-start">
       <div className="w-8 h-8 rounded-full bg-neutral-300 flex items-center justify-center mr-2">
-        {message.sender.charAt(0)}
+        {message.sender? message.sender.charAt(0) : "U"}
       </div>
       <div>
         <div className="flex items-center">
