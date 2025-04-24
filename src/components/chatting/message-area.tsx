@@ -2,13 +2,12 @@
 
 import { useRef, useEffect } from "react";
 import { Message } from "./types";
+import { MessageItem } from "./message-item";
+import { useChattingProvider } from "@/app/sse/_components/chatting-provider";
 
-interface MessageAreaProps {
-  messages: Message[];
-}
-
-export function MessageArea({ messages }: MessageAreaProps) {
+export function MessageArea() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { channelId, messages } = useChattingProvider();
 
   // 메시지가 추가될 때마다 스크롤 맨 아래로 이동
   useEffect(() => {
@@ -24,18 +23,7 @@ export function MessageArea({ messages }: MessageAreaProps) {
       ) : (
         <div className="space-y-4">
           {messages.map((message) => (
-            <div key={message.id} className="flex items-start">
-              <div className="w-8 h-8 rounded-full bg-neutral-300 flex items-center justify-center mr-2">
-                {message.sender.charAt(0)}
-              </div>
-              <div>
-                <div className="flex items-center">
-                  <span className="font-medium">{message.sender}</span>
-                  <span className="text-xs text-neutral-500 ml-2">{message.timestamp}</span>
-                </div>
-                <p className="mt-1">{message.content}</p>
-              </div>
-            </div>
+            <MessageItem key={message.id} message={message} />
           ))}
           <div ref={messagesEndRef} />
         </div>

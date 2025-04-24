@@ -73,7 +73,7 @@ export function ChatLayout() {
           channels={channels} 
           directMessages={directMessages} 
         />
-        <MessageArea messages={messages} />
+        <MessageArea />
         <MessageInput onSendMessage={handleSendMessage} />
       </div>
     </div>

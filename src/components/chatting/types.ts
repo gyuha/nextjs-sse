@@ -13,8 +13,8 @@ export type DirectMessage = {
 
 export type Message = {
   id: string;
+  channelId: string;
   content: string;
   sender: string;
   timestamp: string;
-  channelId: string;
 };
