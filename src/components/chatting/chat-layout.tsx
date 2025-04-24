@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChannelList } from "./ChannelList";
-import { DirectMessageList } from "./DirectMessageList";
-import { ChannelHeader } from "./ChannelHeader";
-import { MessageArea } from "./MessageArea";
-import { MessageInput } from "./MessageInput";
+import { ChannelList } from "./channel-list";
+import { DirectMessageList } from "./direct-message-list";
+import { ChannelHeader } from "./channel-header";
+import { MessageArea } from "./message-area";
+import { MessageInput } from "./message-linput";
 import { Channel, DirectMessage, Message } from "./types";
 
 export function ChatLayout() {
