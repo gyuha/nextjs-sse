@@ -40,8 +40,8 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
 
   const channels: Channel[] = [
     { id: "general", name: "General" },
-    { id: "random", name: "Random", unreadCount: 3 },
-    { id: "support", name: "Support", unreadCount: 1 },
+    { id: "random", name: "Random" },
+    { id: "support", name: "Support" },
     { id: "team", name: "Team" },
   ];
 
