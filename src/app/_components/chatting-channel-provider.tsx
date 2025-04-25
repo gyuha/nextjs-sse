@@ -1,22 +1,22 @@
 import { Channel } from '@/types';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-interface IChattingChannelContextState {
+interface ChattingChannelContextState {
   currentChannelId: string;
   channels: Channel[]
 }
 
-interface IChattingChannelContext extends IChattingChannelContextState {
+interface ChattingChannelContextAction extends ChattingChannelContextState {
   setCurrentChannelId: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const ChattingChannelContext = createContext<IChattingChannelContext | undefined>(undefined);
+const ChattingChannelContext = createContext<ChattingChannelContextAction | undefined>(undefined);
 
-interface IChattingChannelProviderProps {
+interface ChattingChannelProviderProps {
   children: React.ReactNode;
 }
 
-export const ChattingChannelProvider: React.FC<IChattingChannelProviderProps> = ({ children }: IChattingChannelProviderProps) => {
+export const ChattingChannelProvider: React.FC<ChattingChannelProviderProps> = ({ children }: ChattingChannelProviderProps) => {
   const [currentChannelId, setCurrentChannelId] = useState<string>('');
   const [channels, setChannels] = useState<Channel[]>([]);
 
