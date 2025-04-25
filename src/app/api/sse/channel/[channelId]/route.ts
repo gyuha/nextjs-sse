@@ -1,5 +1,6 @@
-import { Message, User, UserEvent } from "@/types";
-import { NextRequest, NextResponse } from "next/server";
+import type { Message, User, UserEvent } from "@/types";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // 채널별 SSE 연결을 관리하는 클래스
 class SSEConnectionManager {
@@ -122,14 +123,14 @@ class SSEConnectionManager {
     console.log(`채널 ${channelId}로 메시지 브로드캐스트: ${JSON.stringify(data)}`);
     console.log(`채널 ${channelId}의 현재 연결된 클라이언트 수: ${controllers.size}`);
     
-    controllers.forEach(controller => {
+    for (const controller of controllers) {
       try {
         controller.enqueue(encoded);
       } catch (error) {
         console.error(`채널 ${channelId} 메시지 전송 중 오류 발생:`, error);
         this.removeController(channelId, controller);
       }
-    });
+    }
   }
 
   // 채널의 사용자 목록 반환
