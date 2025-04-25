@@ -35,3 +35,14 @@ export type UserEvent = {
   user: User;
   channelId: string;
 };
+
+export type Room = {
+  id: string;
+  name: string;
+  userCount: number;
+};
+
+export type RoomEvent = {
+  type: "room-created" | "room-updated" | "room-deleted";
+  room: Room;
+};
