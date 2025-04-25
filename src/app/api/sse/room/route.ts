@@ -1,17 +1,16 @@
-import { Channel, ChannelEvent, User } from "@/types";
-import { NextRequest, NextResponse } from "next/server";
+import type { Channel, ChannelEvent, User } from "@/types";
+import type { NextRequest, NextResponse } from "next/server";
 
 // Channel 연결을 관리하는 싱글톤 클래스
 class ChannelConnectionManager {
+    // 채널 이름과 채널 사용자 수만 관리 하자.. 사용자 목록은 해당 채널 에서 관리
     private static instance: ChannelConnectionManager;
-    private controllers: Map<string, Set<ReadableStreamDefaultController<any>>>;
+    private controllers: Map<string, Set<ReadableStreamDefaultController<unknown>>>;
     private channels: Map<string, Channel>;
-    private channelUsers: Map<string, Map<string, User>>; // 채널별 접속 사용자 관리
 
     private constructor() {
         this.controllers = new Map();
         this.channels = new Map();
-        this.channelUsers = new Map();
 
         // 기본 채널 생성
         this.createChannel('general', '기본 채팅방');
@@ -57,7 +56,6 @@ class ChannelConnectionManager {
                 userCount: 0
             };
             this.channels.set(channelId, channel);
-            this.channelUsers.set(channelId, new Map());
 
             // 채널 생성 이벤트 브로드캐스트
             this.broadcastChannelEvent({
@@ -77,7 +75,6 @@ class ChannelConnectionManager {
         const channel = this.channels.get(channelId);
         if (channel) {
             this.channels.delete(channelId);
-            this.channelUsers.delete(channelId);
 
             // 채널 삭제 이벤트 브로드캐스트
             this.broadcastChannelEvent({
@@ -98,9 +95,6 @@ class ChannelConnectionManager {
             return false;
         }
 
-        if (!this.channelUsers.has(channelId)) {
-            this.channelUsers.set(channelId, new Map());
-        }
 
         // const users = this.channelUsers.get(channelId)!;
         const users = this.channelUsers.get(channelId) ?? new Map<string, User>();

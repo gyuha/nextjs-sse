@@ -3,7 +3,7 @@
     "scope": "typescript,typescriptreact",
     "prefix": "rfc",
     "body": [
-      "import React from 'react';\r",
+      "import type React from 'react';\r",
       "\r",
       "const ${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/g} = (): React.JSX.Element | null => {\r",
       "  return <>${1}</>;\r",
@@ -18,7 +18,7 @@
     "scope": "typescript,typescriptreact",
     "prefix": "rfcp",
     "body": [
-      "import React from 'react';\r",
+      "import type React from 'react';\r",
       "\r",
       "interface I${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/g}Props {\r",
       "  ${1}\r",
@@ -38,7 +38,7 @@
     "scope": "typescript,typescriptreact",
     "prefix": "rfcpc",
     "body": [
-      "import React from 'react';\r",
+      "import type React from 'react';\r",
       "\r",
       "interface I${TM_FILENAME_BASE/(.*)/${1:/pascalcase}/g}Props {\r",
       "  children: React.JSX.Element | null;\r",
@@ -55,19 +55,12 @@
     ],
     "description": "React Function component with children props"
   },
-  "tt": {
-    "scope": "typescript,typescriptreact",
-    "prefix": "tt",
-    "body": [
-      "${TM_FILENAME_BASE/^(.*)-provider$/${1:/pascalcase}Context/}",
-    ],
-    "description": "React Function component"
-  },
   "React Context Provider": {
     "scope": "typescript,typescriptreact",
     "prefix": "rp",
     "body": [
-      "import React, { createContext, useContext, useState } from 'react';",
+      "import type React from 'react';",
+      "import { createContext, useContext, useState } from 'react';",
       "",
       "interface ${TM_FILENAME_BASE/^(.*)-provider$/${1:/pascalcase}/}ContextState {",
       "  value: string;",
