@@ -1,7 +1,7 @@
 export type Channel = {
   id: string;
   name: string;
-  unreadCount?: number;
+  userCount?: number;
 };
 
 export type DirectMessage = {
@@ -34,4 +34,9 @@ export type UserEvent = {
   type: "join" | "leave";
   user: User;
   channelId: string;
+};
+
+export type ChannelEvent = {
+  type: "channel-created" | "channel-updated" | "channel-deleted";
+  channel: Channel;
 };

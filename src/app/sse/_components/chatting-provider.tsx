@@ -1,5 +1,5 @@
 'use client';
-import { Channel, DirectMessage, Message, User } from "@/components/chatting/types";
+import { Channel, DirectMessage, Message, User } from "@/types";
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 
 interface ChattingProviderState {
