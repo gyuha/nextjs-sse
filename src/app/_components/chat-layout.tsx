@@ -1,9 +1,9 @@
 "use client";
 
-import { ChannelHeader } from "../../_components/channel-header";
-import { ChannelList } from "../../_components/channel-list";
-import { MessageArea } from "./message-area";
-import { MessageInput } from "./message-input";
+import { ChannelHeader } from "../sse/_components/channel-header";
+import { ChannelList } from "../sse/_components/channel-list";
+import { MessageArea } from "../sse/_components/message-area";
+import { MessageInput } from "../sse/_components/message-input";
 
 export function ChatLayout() {
 
