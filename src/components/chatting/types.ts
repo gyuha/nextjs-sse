@@ -1,7 +1,7 @@
 export type Channel = {
   id: string;
   name: string;
-  unreadCount?: number;
+  userCount?: number;
 };
 
 export type DirectMessage = {
@@ -36,13 +36,7 @@ export type UserEvent = {
   channelId: string;
 };
 
-export type Room = {
-  id: string;
-  name: string;
-  userCount: number;
-};
-
-export type RoomEvent = {
-  type: "room-created" | "room-updated" | "room-deleted";
-  room: Room;
+export type ChannelEvent = {
+  type: "channel-created" | "channel-updated" | "channel-deleted";
+  channel: Channel;
 };

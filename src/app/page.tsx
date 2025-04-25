@@ -7,8 +7,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Users, MessageSquare } from "lucide-react"
 
-// Sample chat room data
-const chatRooms = [
+// Sample chat channel data
+const chatChannels = [
   { id: 1, name: "일반 채팅", users: 12 },
   { id: 2, name: "게임 토론", users: 8 },
   { id: 3, name: "음악 이야기", users: 5 },
@@ -18,8 +18,8 @@ const chatRooms = [
   { id: 7, name: "스포츠 토크", users: 11 },
 ]
 
-export default function ChatRoomEntry() {
-  const [selectedRoom, setSelectedRoom] = useState<number | null>(null)
+export default function ChatChannelEntry() {
+  const [selectedChannel, setSelectedChannel] = useState<number | null>(null)
   const [username, setUsername] = useState("")
   const [error, setError] = useState("")
 
@@ -29,14 +29,14 @@ export default function ChatRoomEntry() {
       return
     }
 
-    if (selectedRoom === null) {
+    if (selectedChannel === null) {
       setError("채팅방을 선택해주세요")
       return
     }
 
     setError("")
-    // Here you would typically navigate to the chat room or connect to a socket
-    alert(`${username}님이 "${chatRooms.find((room) => room.id === selectedRoom)?.name}" 채팅방에 입장합니다`)
+    // Here you would typically navigate to the chat channel or connect to a socket
+    alert(`${username}님이 "${chatChannels.find((channel) => channel.id === selectedChannel)?.name}" 채팅방에 입장합니다`)
   }
 
   return (
@@ -49,21 +49,21 @@ export default function ChatRoomEntry() {
         <CardContent className="space-y-4">
           <ScrollArea className="h-[300px] rounded-md border p-2">
             <div className="space-y-2">
-              {chatRooms.map((room) => (
+              {chatChannels.map((channel) => (
                 <div
-                  key={room.id}
+                  key={channel.id}
                   className={`flex items-center justify-between rounded-lg p-3 cursor-pointer transition-colors ${
-                    selectedRoom === room.id ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                    selectedChannel === channel.id ? "bg-primary text-primary-foreground" : "hover:bg-muted"
                   }`}
-                  onClick={() => setSelectedRoom(room.id)}
+                  onClick={() => setSelectedChannel(channel.id)}
                 >
                   <div className="flex items-center gap-2">
                     <MessageSquare className="h-5 w-5" />
-                    <span className="font-medium">{room.name}</span>
+                    <span className="font-medium">{channel.name}</span>
                   </div>
                   <div className="flex items-center gap-1 text-sm">
                     <Users className="h-4 w-4" />
-                    <span>{room.users}</span>
+                    <span>{channel.users}</span>
                   </div>
                 </div>
               ))}

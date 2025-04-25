@@ -1,141 +1,152 @@
-import { Room, RoomEvent, User } from "@/components/chatting/types";
+import { Channel, ChannelEvent, User } from "@/components/chatting/types";
 import { NextRequest, NextResponse } from "next/server";
 
-// 룸 관리를 위한 싱글톤 클래스
-class RoomConnectionManager {
-    private static instance: RoomConnectionManager;
-    private controllers: Set<ReadableStreamController<Uint8Array>>;
-    private rooms: Map<string, Room>;
-    private roomUsers: Map<string, Map<string, User>>; // 룸별 접속 사용자 관리
+// Channel 연결을 관리하는 싱글톤 클래스
+class ChannelConnectionManager {
+    private static instance: ChannelConnectionManager;
+    private controllers: Map<string, Set<ReadableStreamDefaultController<any>>>;
+    private channels: Map<string, Channel>;
+    private channelUsers: Map<string, Map<string, User>>; // 채널별 접속 사용자 관리
 
     private constructor() {
-        this.controllers = new Set();
-        this.rooms = new Map();
-        this.roomUsers = new Map();
+        this.controllers = new Map();
+        this.channels = new Map();
+        this.channelUsers = new Map();
 
-        // 기본 룸 생성
-        this.createRoom('general', '기본 채팅방');
+        // 기본 채널 생성
+        this.createChannel('general', '기본 채팅방');
     }
 
-    // 싱글톤 패턴 사용
-    public static getInstance(): RoomConnectionManager {
-        if (!RoomConnectionManager.instance) {
-            RoomConnectionManager.instance = new RoomConnectionManager();
+    public static getInstance(): ChannelConnectionManager {
+        if (!ChannelConnectionManager.instance) {
+            ChannelConnectionManager.instance = new ChannelConnectionManager();
         }
-        return RoomConnectionManager.instance;
+        return ChannelConnectionManager.instance;
     }
 
     // 새 컨트롤러 등록 
     public registerController(controller: ReadableStreamController<Uint8Array>): void {
-        this.controllers.add(controller);
-        console.log(`새 룸 연결 등록됨. 현재 연결 수: ${this.controllers.size}`);
+        const clientId = crypto.randomUUID(); // 클라이언트 ID 생성
+        if (!this.controllers.has(clientId)) {
+            this.controllers.set(clientId, new Set());
+        }
+        this.controllers.get(clientId)!.add(controller);
+        console.log(`새 채널 연결 등록됨. 현재 연결 수: ${this.controllers.size}`);
     }
 
     // 컨트롤러 제거
     public removeController(controller: ReadableStreamController<Uint8Array>): void {
-        this.controllers.delete(controller);
-        console.log(`룸 연결 종료됨. 현재 연결 수: ${this.controllers.size}`);
+        for (const [clientId, controllers] of this.controllers) {
+            if (controllers.has(controller)) {
+                controllers.delete(controller);
+                if (controllers.size === 0) {
+                    this.controllers.delete(clientId);
+                }
+                break;
+            }
+        }
+        console.log(`채널 연결 종료됨. 현재 연결 수: ${this.controllers.size}`);
     }
 
-    // 룸 생성
-    public createRoom(roomId: string, roomName: string): Room {
-        if (!this.rooms.has(roomId)) {
-            const room: Room = {
-                id: roomId,
-                name: roomName,
+    // 채널 생성
+    public createChannel(channelId: string, channelName: string): Channel {
+        if (!this.channels.has(channelId)) {
+            const channel: Channel = {
+                id: channelId,
+                name: channelName,
                 userCount: 0
             };
-            this.rooms.set(roomId, room);
-            this.roomUsers.set(roomId, new Map());
+            this.channels.set(channelId, channel);
+            this.channelUsers.set(channelId, new Map());
 
-            // 룸 생성 이벤트 브로드캐스트
-            this.broadcastRoomEvent({
-                type: "room-created",
-                room
+            // 채널 생성 이벤트 브로드캐스트
+            this.broadcastChannelEvent({
+                type: "channel-created",
+                channel
             });
 
-            console.log(`룸 생성됨: ${roomName}(${roomId})`);
-            return room;
+            console.log(`채널 생성됨: ${channelName}(${channelId})`);
+            return channel;
         }
 
-        return this.rooms.get(roomId)!;
+        return this.channels.get(channelId)!;
     }
 
-    // 룸 삭제
-    public deleteRoom(roomId: string): boolean {
-        const room = this.rooms.get(roomId);
-        if (room) {
-            this.rooms.delete(roomId);
-            this.roomUsers.delete(roomId);
+    // 채널 삭제
+    public deleteChannel(channelId: string): boolean {
+        const channel = this.channels.get(channelId);
+        if (channel) {
+            this.channels.delete(channelId);
+            this.channelUsers.delete(channelId);
 
-            // 룸 삭제 이벤트 브로드캐스트
-            this.broadcastRoomEvent({
-                type: "room-deleted",
-                room
+            // 채널 삭제 이벤트 브로드캐스트
+            this.broadcastChannelEvent({
+                type: "channel-deleted",
+                channel
             });
 
-            console.log(`룸 삭제됨: ${room.name}(${roomId})`);
+            console.log(`채널 삭제됨: ${channel.name}(${channelId})`);
             return true;
         }
         return false;
     }
 
-    // 사용자를 룸에 추가
-    public addUserToRoom(roomId: string, user: User): boolean {
-        if (!this.rooms.has(roomId)) {
-            console.log(`룸 ${roomId}이 존재하지 않습니다.`);
+    // 사용자를 채널에 추가
+    public addUserToChannel(channelId: string, user: User): boolean {
+        if (!this.channels.has(channelId)) {
+            console.log(`채널 ${channelId}이 존재하지 않습니다.`);
             return false;
         }
 
-        if (!this.roomUsers.has(roomId)) {
-            this.roomUsers.set(roomId, new Map());
+        if (!this.channelUsers.has(channelId)) {
+            this.channelUsers.set(channelId, new Map());
         }
 
-        const users = this.roomUsers.get(roomId)!;
+        const users = this.channelUsers.get(channelId)!;
         if (!users.has(user.id)) {
             users.set(user.id, user);
 
-            // 룸의 사용자 수 업데이트
-            const room = this.rooms.get(roomId)!;
-            room.userCount = users.size;
+            // 채널의 사용자 수 업데이트
+            const channel = this.channels.get(channelId)!;
+            channel.userCount = users.size;
 
-            // 룸 업데이트 이벤트 브로드캐스트
-            this.broadcastRoomEvent({
-                type: "room-updated",
-                room
+            // 채널 업데이트 이벤트 브로드캐스트
+            this.broadcastChannelEvent({
+                type: "channel-updated",
+                channel
             });
 
-            console.log(`사용자 ${user.name}(${user.id})가 룸 ${roomId}에 추가됨, 현재 사용자 수: ${room.userCount}`);
+            console.log(`사용자 ${user.name}(${user.id})가 채널 ${channelId}에 추가됨, 현재 사용자 수: ${channel.userCount}`);
             return true;
         }
 
         return false;
     }
 
-    // 사용자를 룸에서 제거
-    public removeUserFromRoom(roomId: string, userId: string): boolean {
-        if (!this.rooms.has(roomId) || !this.roomUsers.has(roomId)) {
+    // 사용자를 채널에서 제거
+    public removeUserFromChannel(channelId: string, userId: string): boolean {
+        if (!this.channels.has(channelId) || !this.channelUsers.has(channelId)) {
             return false;
         }
 
-        const users = this.roomUsers.get(roomId)!;
+        const users = this.channelUsers.get(channelId)!;
         const removed = users.delete(userId);
 
         if (removed) {
-            // 룸의 사용자 수 업데이트
-            const room = this.rooms.get(roomId)!;
-            room.userCount = users.size;
+            // 채널의 사용자 수 업데이트
+            const channel = this.channels.get(channelId)!;
+            channel.userCount = users.size;
 
-            console.log(`사용자 ${userId}가 룸 ${roomId}에서 제거됨, 현재 사용자 수: ${room.userCount}`);
+            console.log(`사용자 ${userId}가 채널 ${channelId}에서 제거됨, 현재 사용자 수: ${channel.userCount}`);
 
-            // 사용자가 0명이면 룸 삭제 (general 룸은 예외)
-            if (room.userCount === 0 && roomId !== 'general') {
-                this.deleteRoom(roomId);
+            // 사용자가 0명이면 채널 삭제 (general 채널은 예외)
+            if (channel.userCount === 0 && channelId !== 'general') {
+                this.deleteChannel(channelId);
             } else {
-                // 룸 업데이트 이벤트 브로드캐스트
-                this.broadcastRoomEvent({
-                    type: "room-updated",
-                    room
+                // 채널 업데이트 이벤트 브로드캐스트
+                this.broadcastChannelEvent({
+                    type: "channel-updated",
+                    channel
                 });
             }
 
@@ -145,10 +156,10 @@ class RoomConnectionManager {
         return false;
     }
 
-    // 룸 이벤트 브로드캐스트
-    private broadcastRoomEvent(event: RoomEvent): void {
+    // 채널 이벤트 브로드캐스트
+    private broadcastChannelEvent(event: ChannelEvent): void {
         this.broadcast({
-            type: "room-event",
+            type: "channel-event",
             event
         });
     }
@@ -167,29 +178,31 @@ class RoomConnectionManager {
         console.log(`메시지 브로드캐스트: ${JSON.stringify(data)}`);
         console.log(`현재 연결된 클라이언트 수: ${this.controllers.size}`);
 
-        this.controllers.forEach(controller => {
-            try {
-                controller.enqueue(encoded);
-            } catch (error) {
-                console.error('메시지 전송 중 오류 발생:', error);
-                this.removeController(controller);
-            }
+        this.controllers.forEach(controllers => {
+            controllers.forEach(controller => {
+                try {
+                    controller.enqueue(encoded);
+                } catch (error) {
+                    console.error('메시지 전송 중 오류 발생:', error);
+                    this.removeController(controller);
+                }
+            });
         });
     }
 
-    // 모든 룸 목록 반환
-    public getRooms(): Room[] {
-        return Array.from(this.rooms.values());
+    // 모든 채널 목록 반환
+    public getChannels(): Channel[] {
+        return Array.from(this.channels.values());
     }
 
-    // 특정 룸 정보 반환
-    public getRoom(roomId: string): Room | undefined {
-        return this.rooms.get(roomId);
+    // 특정 채널 정보 반환
+    public getChannel(channelId: string): Channel | undefined {
+        return this.channels.get(channelId);
     }
 
-    // 특정 룸의 사용자 목록 반환
-    public getRoomUsers(roomId: string): User[] {
-        const userMap = this.roomUsers.get(roomId);
+    // 특정 채널의 사용자 목록 반환
+    public getChannelUsers(channelId: string): User[] {
+        const userMap = this.channelUsers.get(channelId);
         if (!userMap) return [];
 
         return Array.from(userMap.values());
@@ -197,17 +210,21 @@ class RoomConnectionManager {
 
     // 현재 연결 수 반환
     public get connectionCount(): number {
-        return this.controllers.size;
+        let count = 0;
+        this.controllers.forEach(controllers => {
+            count += controllers.size;
+        });
+        return count;
     }
 }
 
 // 싱글톤 인스턴스 가져오기
-const roomManager = RoomConnectionManager.getInstance();
+const channelManager = ChannelConnectionManager.getInstance();
 
 // GET 요청 처리 - SSE 연결 설정
 export async function GET(request: NextRequest) {
     try {
-        console.log('룸 관리 SSE 연결 요청 받음');
+        console.log('채널 관리 SSE 연결 요청 받음');
 
         // 클라이언트에 주기적으로 핑 메시지를 보내기 위한 타이머 ID
         let pingInterval: NodeJS.Timeout | null = null;
@@ -217,14 +234,14 @@ export async function GET(request: NextRequest) {
             start(ctrl) {
                 controller = ctrl;
                 // 클라이언트 연결 등록
-                roomManager.registerController(controller);
+                channelManager.registerController(controller);
 
                 // 연결 시작 메시지를 즉시 전송
                 const connectMessage = `data: ${JSON.stringify({
                     type: "connect",
                     message: "연결됨",
-                    connectionCount: roomManager.connectionCount,
-                    rooms: roomManager.getRooms()
+                    connectionCount: channelManager.connectionCount,
+                    channels: channelManager.getChannels()
                 })}\n\n`;
                 controller.enqueue(new TextEncoder().encode(connectMessage));
 
@@ -234,12 +251,12 @@ export async function GET(request: NextRequest) {
                         const pingMessage = `data: ${JSON.stringify({
                             type: "ping",
                             timestamp: new Date().toISOString(),
-                            connectionCount: roomManager.connectionCount
+                            connectionCount: channelManager.connectionCount
                         })}\n\n`;
                         controller.enqueue(new TextEncoder().encode(pingMessage));
                     } catch (error) {
                         console.error('핑 메시지 전송 중 오류:', error);
-                        roomManager.removeController(controller);
+                        channelManager.removeController(controller);
                         if (pingInterval) {
                             clearInterval(pingInterval);
                             pingInterval = null;
@@ -250,8 +267,8 @@ export async function GET(request: NextRequest) {
 
                 // 연결이 종료될 때 컨트롤러 제거 및 리소스 정리
                 request.signal.addEventListener("abort", () => {
-                    console.log('룸 연결 종료됨');
-                    roomManager.removeController(controller);
+                    console.log('채널 연결 종료됨');
+                    channelManager.removeController(controller);
                     if (pingInterval) {
                         clearInterval(pingInterval);
                         pingInterval = null;
@@ -260,9 +277,9 @@ export async function GET(request: NextRequest) {
                 });
             },
             cancel() {
-                console.log('룸 스트림 취소됨');
+                console.log('채널 스트림 취소됨');
                 if (controller) {
-                    roomManager.removeController(controller);
+                    channelManager.removeController(controller);
                 }
                 if (pingInterval) {
                     clearInterval(pingInterval);
@@ -287,41 +304,41 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// POST 요청 처리 - 룸 관리 API
+// POST 요청 처리 - 채널 관리 API
 export async function POST(request: NextRequest) {
     try {
         const data = await request.json();
-        const { action, roomId, roomName, userId } = data;
+        const { action, channelId, channelName, userId } = data;
 
-        console.log(`룸 관리 API 호출: ${action}`, data);
+        console.log(`채널 관리 API 호출: ${action}`, data);
 
         let result;
 
         switch (action) {
-            case 'createRoom':
-                if (!roomId || !roomName) {
+            case 'createChannel':
+                if (!channelId || !channelName) {
                     return NextResponse.json(
-                        { error: "roomId와 roomName이 필요합니다" },
+                        { error: "channelId와 channelName이 필요합니다" },
                         { status: 400 }
                     );
                 }
-                result = roomManager.createRoom(roomId, roomName);
-                return NextResponse.json({ success: true, room: result });
+                result = channelManager.createChannel(channelId, channelName);
+                return NextResponse.json({ success: true, channel: result });
 
-            case 'deleteRoom':
-                if (!roomId) {
+            case 'deleteChannel':
+                if (!channelId) {
                     return NextResponse.json(
-                        { error: "roomId가 필요합니다" },
+                        { error: "channelId가 필요합니다" },
                         { status: 400 }
                     );
                 }
-                result = roomManager.deleteRoom(roomId);
+                result = channelManager.deleteChannel(channelId);
                 return NextResponse.json({ success: result });
 
-            case 'joinRoom':
-                if (!roomId || !userId) {
+            case 'joinChannel':
+                if (!channelId || !userId) {
                     return NextResponse.json(
-                        { error: "roomId와 userId가 필요합니다" },
+                        { error: "channelId와 userId가 필요합니다" },
                         { status: 400 }
                     );
                 }
@@ -336,39 +353,39 @@ export async function POST(request: NextRequest) {
                     joinTime: new Date().toISOString()
                 };
 
-                result = roomManager.addUserToRoom(roomId, user);
+                result = channelManager.addUserToChannel(channelId, user);
                 return NextResponse.json({
                     success: result,
-                    room: roomManager.getRoom(roomId),
-                    users: roomManager.getRoomUsers(roomId)
+                    channel: channelManager.getChannel(channelId),
+                    users: channelManager.getChannelUsers(channelId)
                 });
 
-            case 'leaveRoom':
-                if (!roomId || !userId) {
+            case 'leaveChannel':
+                if (!channelId || !userId) {
                     return NextResponse.json(
-                        { error: "roomId와 userId가 필요합니다" },
+                        { error: "channelId와 userId가 필요합니다" },
                         { status: 400 }
                     );
                 }
-                result = roomManager.removeUserFromRoom(roomId, userId);
+                result = channelManager.removeUserFromChannel(channelId, userId);
                 return NextResponse.json({ success: result });
 
-            case 'getRooms':
+            case 'getChannels':
                 return NextResponse.json({
                     success: true,
-                    rooms: roomManager.getRooms()
+                    channels: channelManager.getChannels()
                 });
 
-            case 'getRoomUsers':
-                if (!roomId) {
+            case 'getChannelUsers':
+                if (!channelId) {
                     return NextResponse.json(
-                        { error: "roomId가 필요합니다" },
+                        { error: "channelId가 필요합니다" },
                         { status: 400 }
                     );
                 }
                 return NextResponse.json({
                     success: true,
-                    users: roomManager.getRoomUsers(roomId)
+                    users: channelManager.getChannelUsers(channelId)
                 });
 
             default:
@@ -378,7 +395,7 @@ export async function POST(request: NextRequest) {
                 );
         }
     } catch (error) {
-        console.error('룸 관리 API 처리 중 오류 발생:', error);
+        console.error('채널 관리 API 처리 중 오류 발생:', error);
         return NextResponse.json(
             { error: "요청 처리 중 오류가 발생했습니다" },
             { status: 500 }
