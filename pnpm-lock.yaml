@@ -8,6 +8,7 @@ specifiers:
   '@radix-ui/react-dialog': ^1.1.11
   '@radix-ui/react-label': ^2.1.4
   '@radix-ui/react-popover': ^1.1.11
+  '@radix-ui/react-scroll-area': ^1.2.6
   '@radix-ui/react-select': ^2.2.2
   '@radix-ui/react-slot': ^1.2.0
   '@tailwindcss/postcss': ^4
@@ -38,6 +39,7 @@ dependencies:
   '@radix-ui/react-dialog': 1.1.11_5j5q5giq4a6q5rwe55huzqxn5e
   '@radix-ui/react-label': 2.1.4_5j5q5giq4a6q5rwe55huzqxn5e
   '@radix-ui/react-popover': 1.1.11_5j5q5giq4a6q5rwe55huzqxn5e
+  '@radix-ui/react-scroll-area': 1.2.6_5j5q5giq4a6q5rwe55huzqxn5e
   '@radix-ui/react-select': 2.2.2_5j5q5giq4a6q5rwe55huzqxn5e
   '@radix-ui/react-slot': 1.2.0_dl52hbs33murufky2ojig52vdq
   class-variance-authority: 0.7.1
@@ -754,6 +756,34 @@ packages:
         optional: true
     dependencies:
       '@radix-ui/react-slot': 1.2.0_dl52hbs33murufky2ojig52vdq
+      '@types/react': 19.1.2
+      '@types/react-dom': 19.1.2_@types+react@19.1.2
+      react: 19.1.0
+      react-dom: 19.1.0_react@19.1.0
+    dev: false
+
+  /@radix-ui/react-scroll-area/1.2.6_5j5q5giq4a6q5rwe55huzqxn5e:
+    resolution: {integrity: sha512-lj8OMlpPERXrQIHlEQdlXHJoRT52AMpBrgyPYylOhXYq5e/glsEdtOc/kCQlsTdtgN5U0iDbrrolDadvektJGQ==}
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-dom':
+        optional: true
+    dependencies:
+      '@radix-ui/number': 1.1.1
+      '@radix-ui/primitive': 1.1.2
+      '@radix-ui/react-compose-refs': 1.1.2_dl52hbs33murufky2ojig52vdq
+      '@radix-ui/react-context': 1.1.2_dl52hbs33murufky2ojig52vdq
+      '@radix-ui/react-direction': 1.1.1_dl52hbs33murufky2ojig52vdq
+      '@radix-ui/react-presence': 1.1.4_5j5q5giq4a6q5rwe55huzqxn5e
+      '@radix-ui/react-primitive': 2.1.0_5j5q5giq4a6q5rwe55huzqxn5e
+      '@radix-ui/react-use-callback-ref': 1.1.1_dl52hbs33murufky2ojig52vdq
+      '@radix-ui/react-use-layout-effect': 1.1.1_dl52hbs33murufky2ojig52vdq
       '@types/react': 19.1.2
       '@types/react-dom': 19.1.2_@types+react@19.1.2
       react: 19.1.0
