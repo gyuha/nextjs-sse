@@ -1,6 +1,6 @@
 "use client";
 
-import { useChattingProvider } from "@/app/sse/_components/chatting-provider";
+import { useChattingProvider } from "@/app/channel/_components/chatting-provider";
 import { useEffect, useRef } from "react";
 import { MessageItem } from "../../_components/message-item";
 
