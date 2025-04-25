@@ -1,4 +1,4 @@
-import { Message, User, UserEvent } from "@/components/chatting/types";
+import { Message, User, UserEvent } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 
 // 채널별 SSE 연결을 관리하는 클래스

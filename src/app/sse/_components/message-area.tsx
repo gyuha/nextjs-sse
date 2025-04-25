@@ -2,7 +2,7 @@
 
 import { useChattingProvider } from "@/app/sse/_components/chatting-provider";
 import { useEffect, useRef } from "react";
-import { MessageItem } from "./message-item";
+import { MessageItem } from "../../_components/message-item";
 
 export function MessageArea() {
   const messagesEndRef = useRef<HTMLDivElement>(null);

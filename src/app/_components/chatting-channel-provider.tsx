@@ -1,4 +1,4 @@
-import { Channel } from '@/components/chatting/types';
+import { Channel } from '@/types';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface IChattingChannelContextState {

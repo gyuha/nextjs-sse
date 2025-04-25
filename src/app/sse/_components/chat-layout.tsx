@@ -1,7 +1,7 @@
 "use client";
 
-import { ChannelHeader } from "./channel-header";
-import { ChannelList } from "./channel-list";
+import { ChannelHeader } from "../../_components/channel-header";
+import { ChannelList } from "../../_components/channel-list";
 import { MessageArea } from "./message-area";
 import { MessageInput } from "./message-input";
 

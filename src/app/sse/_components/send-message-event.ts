@@ -1,4 +1,4 @@
-import { Message } from "@/components/chatting/types";
+import { Message } from "@/types";
 
 export const sendMessage = async (
   connectionStatus: string,

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fakerKO as faker } from '@faker-js/faker';
 import { useState } from "react";
-import { sendMessage } from "./send-message-event";
+import { sendMessage } from "../../_components/send-message-event";
 
 export function MessageInput() {
   const [messageInput, setMessageInput] = useState("");

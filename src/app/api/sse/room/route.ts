@@ -1,4 +1,4 @@
-import { Channel, ChannelEvent, User } from "@/components/chatting/types";
+import { Channel, ChannelEvent, User } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 
 // Channel 연결을 관리하는 싱글톤 클래스
