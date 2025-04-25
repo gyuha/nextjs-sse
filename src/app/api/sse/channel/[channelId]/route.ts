@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 // 채널별 SSE 연결을 관리하는 클래스
 class SSEConnectionManager {
   private static instance: SSEConnectionManager;
-  private channelControllers: Map<string, Set<ReadableStreamController<Uint8Array>>>;
+  private channelControllers: Map<string, Set<ReadableStreamController<unknown>>>;
   private channelUsers: Map<string, Map<string, User>>; // 채널별 접속 사용자 관리
 
   private constructor() {
