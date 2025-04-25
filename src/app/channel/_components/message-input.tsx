@@ -1,6 +1,6 @@
 "use client";
 
-import { useChattingProvider } from "@/app/sse/_components/chatting-provider";
+import { useChattingProvider } from "@/app/channel/_components/chatting-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fakerKO as faker } from '@faker-js/faker';
