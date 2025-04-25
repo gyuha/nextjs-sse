@@ -1,18 +1,23 @@
 'use client';
-import { Channel, Message } from "@/components/chatting/types";
+import { Channel, DirectMessage, Message, User } from "@/components/chatting/types";
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 
 interface ChattingProviderState {
   channelId: string;
   channels: Channel[];
+  directMessages: DirectMessage[];
   messages: Message[];
   name: string;
+  userId: string;
   connectionStatus: 'disconnected' | 'connecting' | 'connected';
+  channelUsers: User[];
+  connectionCount: number;
 }
 
 interface ChattingContextType extends ChattingProviderState {
   setChannelId: React.Dispatch<React.SetStateAction<string>>;
   setName: React.Dispatch<React.SetStateAction<string>>;
+  sendMessage: (content: string, sender: string) => Promise<void>;
 }
 
 const ChattingContext = createContext<ChattingContextType | undefined>(undefined);
@@ -25,9 +30,12 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   children,
 }: ChattingProviderProps) => {
   const [channelId, setChannelId] = useState<string>('general');
-  const [name, setName] = useState<string>('');
+  const [name, setName] = useState<string>('Guest_' + Math.floor(Math.random() * 1000));
+  const [userId, setUserId] = useState<string>(crypto.randomUUID());
   const [messages, setMessages] = useState<Message[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
+  const [channelUsers, setChannelUsers] = useState<User[]>([]);
+  const [connectionCount, setConnectionCount] = useState<number>(0);
   
   // 현재 이벤트 소스 참조를 저장하기 위한 ref
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -43,6 +51,11 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
     { id: "random", name: "Random" },
     { id: "support", name: "Support" },
     { id: "team", name: "Team" },
+  ];
+
+  const directMessages: DirectMessage[] = [
+    { id: "user1", name: "John Doe", online: true, initial: "JD" },
+    { id: "user2", name: "Jane Smith", online: false, initial: "JS" },
   ];
 
   // 메시지 전송 함수
@@ -87,8 +100,13 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
     let hasReceivedMessage = false;
     
     try {
+      // URL에 사용자 정보 추가
+      const url = new URL(`/api/sse/${targetChannelId}`, window.location.origin);
+      url.searchParams.append('userName', name);
+      url.searchParams.append('userId', userId);
+      
       // 새 이벤트 소스 생성
-      const eventSource = new EventSource(`/api/sse/${targetChannelId}`);
+      const eventSource = new EventSource(url.toString());
       
       // 기본 onopen 핸들러 (표준 이벤트 핸들러)
       eventSource.onopen = (event) => {
@@ -107,11 +125,32 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
           if (parsedData.type === 'connect') {
             console.log('연결 성공 메시지:', parsedData);
             setConnectionStatus('connected');
+            setConnectionCount(parsedData.connectionCount || 0);
+            if (parsedData.users) {
+              setChannelUsers(parsedData.users);
+            }
           } else if (parsedData.type === 'message' && parsedData.data) {
             const newMessage = parsedData.data as Message;
             setMessages((prevMessages) => [...prevMessages, newMessage]);
           } else if (parsedData.type === 'ping') {
             console.log(`채널 ${targetChannelId} 핑 메시지 수신:`, parsedData.timestamp);
+            setConnectionCount(parsedData.connectionCount || 0);
+          } else if (parsedData.type === 'user-event' && parsedData.event) {
+            const userEvent = parsedData.event;
+            console.log(`사용자 이벤트 수신:`, userEvent);
+            
+            if (userEvent.type === 'join') {
+              setChannelUsers(prev => {
+                // 이미 존재하는 사용자라면 추가하지 않음
+                const exists = prev.some(u => u.id === userEvent.user.id);
+                if (exists) return prev;
+                return [...prev, userEvent.user];
+              });
+              setConnectionCount(prev => prev + 1);
+            } else if (userEvent.type === 'leave') {
+              setChannelUsers(prev => prev.filter(u => u.id !== userEvent.user.id));
+              setConnectionCount(prev => Math.max(0, prev - 1));
+            }
           }
         } catch (error) {
           console.error(`메시지 파싱 오류:`, error, event.data);
@@ -158,7 +197,7 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
       setConnectionStatus('disconnected');
       return null;
     }
-  }, []);
+  }, [channelId, name, userId]);
 
   // 채널 변경 시 SSE 연결 관리
   useEffect(() => {
@@ -180,6 +219,8 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
     
     // 채널 변경 시 메시지 배열 초기화
     setMessages([]);
+    setChannelUsers([]);
+    setConnectionCount(0);
     
     // 새 SSE 연결 생성
     console.log(`채널 ${channelId}에 새 SSE 연결 생성 중...`);
@@ -206,11 +247,16 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
       value={{
         channelId,
         channels,
+        directMessages,
         messages,
         name,
+        userId,
         setChannelId,
         setName,
         connectionStatus,
+        channelUsers,
+        connectionCount,
+        sendMessage,
       }}
     >
       {children}

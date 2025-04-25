@@ -18,3 +18,20 @@ export type Message = {
   sender: string;
   timestamp: string;
 };
+
+export type User = {
+  id: string;
+  name: string;
+  joinTime: string;
+};
+
+export type ChannelUsers = {
+  channelId: string;
+  users: User[];
+};
+
+export type UserEvent = {
+  type: "join" | "leave";
+  user: User;
+  channelId: string;
+};

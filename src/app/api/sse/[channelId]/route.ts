@@ -1,13 +1,15 @@
-import { Message } from "@/components/chatting/types";
+import { Message, User, UserEvent } from "@/components/chatting/types";
 import { NextRequest, NextResponse } from "next/server";
 
 // 채널별 SSE 연결을 관리하는 클래스
 class SSEConnectionManager {
   private static instance: SSEConnectionManager;
   private channelControllers: Map<string, Set<ReadableStreamController<Uint8Array>>>;
+  private channelUsers: Map<string, Map<string, User>>; // 채널별 접속 사용자 관리
 
   private constructor() {
     this.channelControllers = new Map();
+    this.channelUsers = new Map();
   }
 
   // 싱글톤 패턴 사용
@@ -19,28 +21,90 @@ class SSEConnectionManager {
   }
 
   // 새 컨트롤러 등록 (채널별)
-  public registerController(channelId: string, controller: ReadableStreamController<Uint8Array>): void {
+  public registerController(channelId: string, controller: ReadableStreamController<Uint8Array>, user: User): void {
     if (!this.channelControllers.has(channelId)) {
       this.channelControllers.set(channelId, new Set());
     }
     
     this.channelControllers.get(channelId)?.add(controller);
-    console.log(`새 연결 등록됨. 채널: ${channelId}, 현재 연결 수: ${this.getChannelConnectionCount(channelId)}`);
+    
+    // 사용자 추가
+    this.addUserToChannel(channelId, user);
+    
+    console.log(`새 연결 등록됨. 채널: ${channelId}, 사용자: ${user.name}, 현재 연결 수: ${this.getChannelConnectionCount(channelId)}`);
+    
+    // 사용자 접속 이벤트 브로드캐스트
+    this.broadcastUserEvent(channelId, {
+      type: "join",
+      user,
+      channelId
+    });
   }
 
   // 컨트롤러 제거 (채널별)
-  public removeController(channelId: string, controller: ReadableStreamController<Uint8Array>): void {
+  public removeController(channelId: string, controller: ReadableStreamController<Uint8Array>, userId?: string): void {
     const controllers = this.channelControllers.get(channelId);
     if (controllers) {
       controllers.delete(controller);
+      
+      // 사용자 ID가 제공되었다면 해당 사용자 제거 및 이벤트 전송
+      if (userId) {
+        const user = this.removeUserFromChannel(channelId, userId);
+        if (user) {
+          this.broadcastUserEvent(channelId, {
+            type: "leave",
+            user,
+            channelId
+          });
+        }
+      }
+      
       console.log(`연결 종료됨. 채널: ${channelId}, 현재 연결 수: ${this.getChannelConnectionCount(channelId)}`);
       
       // 채널에 연결이 하나도 없으면 Map에서 제거
       if (controllers.size === 0) {
         this.channelControllers.delete(channelId);
+        this.channelUsers.delete(channelId); // 사용자 목록도 제거
         console.log(`채널 ${channelId}에 연결이 없어 채널 정리됨`);
       }
     }
+  }
+
+  // 사용자를 채널에 추가
+  private addUserToChannel(channelId: string, user: User): void {
+    if (!this.channelUsers.has(channelId)) {
+      this.channelUsers.set(channelId, new Map());
+    }
+    
+    // 동일 ID의 사용자가 이미 있는지 확인
+    const users = this.channelUsers.get(channelId);
+    if (users && !users.has(user.id)) {
+      users.set(user.id, user);
+      console.log(`사용자 ${user.name}(${user.id})가 채널 ${channelId}에 추가됨`);
+    }
+  }
+
+  // 사용자를 채널에서 제거
+  private removeUserFromChannel(channelId: string, userId: string): User | undefined {
+    const channelUserMap = this.channelUsers.get(channelId);
+    if (!channelUserMap) return undefined;
+    
+    const user = channelUserMap.get(userId);
+    if (user) {
+      channelUserMap.delete(userId);
+      console.log(`사용자 ${user.name}(${userId})가 채널 ${channelId}에서 제거됨`);
+      return user;
+    }
+    
+    return undefined;
+  }
+
+  // 사용자 이벤트 브로드캐스트
+  private broadcastUserEvent(channelId: string, event: UserEvent): void {
+    this.broadcastToChannel(channelId, {
+      type: "user-event",
+      event
+    });
   }
 
   // 특정 채널의 모든 클라이언트에 메시지 전송
@@ -66,6 +130,14 @@ class SSEConnectionManager {
         this.removeController(channelId, controller);
       }
     });
+  }
+
+  // 채널의 사용자 목록 반환
+  public getChannelUsers(channelId: string): User[] {
+    const userMap = this.channelUsers.get(channelId);
+    if (!userMap) return [];
+    
+    return Array.from(userMap.values());
   }
 
   // 현재 특정 채널의 연결 수 반환
@@ -102,22 +174,39 @@ export async function GET(
     // channelId를 문자열로 명시적 변환하여 비동기 처리 이슈 해결
     const channelId = String(params.channelId || 'general');
     
-    console.log(`채널 ${channelId}에 SSE 연결 요청 받음 - 요청 URL: ${request.url}`);
+    // URL에서 사용자 정보 추출
+    const url = new URL(request.url);
+    const userName = url.searchParams.get('userName') || '익명 사용자';
+    const userId = url.searchParams.get('userId') || crypto.randomUUID();
+    
+    console.log(`채널 ${channelId}에 SSE 연결 요청 받음 - 사용자: ${userName}(${userId}) - 요청 URL: ${request.url}`);
+    
+    // 사용자 객체 생성
+    const user: User = {
+      id: userId,
+      name: userName,
+      joinTime: new Date().toISOString()
+    };
     
     // 클라이언트에 주기적으로 핑 메시지를 보내기 위한 타이머 ID
     let pingInterval: NodeJS.Timeout | null = null;
     
     const stream = new ReadableStream({
       start(controller) {
-        // 클라이언트 연결 등록 (채널별)
-        connectionManager.registerController(channelId, controller);
+        // 클라이언트 연결 및 사용자 등록 (채널별)
+        connectionManager.registerController(channelId, controller, user);
+        
+        // 채널의 현재 사용자 목록
+        const channelUsers = connectionManager.getChannelUsers(channelId);
         
         // 연결 시작 메시지를 즉시 전송
         const connectMessage = `data: ${JSON.stringify({ 
           type: "connect", 
           message: "연결됨", 
           channelId: channelId,
-          connectionCount: connectionManager.getChannelConnectionCount(channelId) 
+          connectionCount: connectionManager.getChannelConnectionCount(channelId),
+          users: channelUsers,
+          currentUser: user
         })}\n\n`;
         controller.enqueue(new TextEncoder().encode(connectMessage));
         
@@ -127,12 +216,13 @@ export async function GET(
             const pingMessage = `data: ${JSON.stringify({ 
               type: "ping", 
               channelId: channelId,
-              timestamp: new Date().toISOString() 
+              timestamp: new Date().toISOString(),
+              connectionCount: connectionManager.getChannelConnectionCount(channelId)
             })}\n\n`;
             controller.enqueue(new TextEncoder().encode(pingMessage));
           } catch (error) {
             console.error(`채널 ${channelId} 핑 메시지 전송 중 오류:`, error);
-            connectionManager.removeController(channelId, controller);
+            connectionManager.removeController(channelId, controller, userId);
             if (pingInterval) {
               clearInterval(pingInterval);
               pingInterval = null;
@@ -143,8 +233,8 @@ export async function GET(
         
         // 연결이 종료될 때 컨트롤러 제거 및 리소스 정리
         request.signal.addEventListener("abort", () => {
-          console.log(`채널 ${channelId} 클라이언트 연결 종료됨`);
-          connectionManager.removeController(channelId, controller);
+          console.log(`채널 ${channelId} 사용자 ${userName}(${userId}) 연결 종료됨`);
+          connectionManager.removeController(channelId, controller, userId);
           if (pingInterval) {
             clearInterval(pingInterval);
             pingInterval = null;
@@ -153,7 +243,8 @@ export async function GET(
         });
       },
       cancel() {
-        console.log(`채널 ${channelId} 스트림 취소됨`);
+        console.log(`채널 ${channelId} 사용자 ${userName}(${userId}) 스트림 취소됨`);
+        connectionManager.removeController(channelId, controller, userId);
         if (pingInterval) {
           clearInterval(pingInterval);
           pingInterval = null;
