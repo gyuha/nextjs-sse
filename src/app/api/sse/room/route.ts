@@ -102,7 +102,8 @@ class ChannelConnectionManager {
             this.channelUsers.set(channelId, new Map());
         }
 
-        const users = this.channelUsers.get(channelId)!;
+        // const users = this.channelUsers.get(channelId)!;
+        const users = this.channelUsers.get(channelId) ?? new Map<string, User>();
         if (!users.has(user.id)) {
             users.set(user.id, user);
 
@@ -129,12 +130,14 @@ class ChannelConnectionManager {
             return false;
         }
 
-        const users = this.channelUsers.get(channelId)!;
+        const users = this.channelUsers.get(channelId) as Map<string, User>;
         const removed = users.delete(userId);
 
         if (removed) {
             // 채널의 사용자 수 업데이트
-            const channel = this.channels.get(channelId)!;
+            const channel = this.channels.get(channelId);
+            if (!channel) return false;
+            
             channel.userCount = users.size;
 
             console.log(`사용자 ${userId}가 채널 ${channelId}에서 제거됨, 현재 사용자 수: ${channel.userCount}`);
@@ -178,16 +181,16 @@ class ChannelConnectionManager {
         console.log(`메시지 브로드캐스트: ${JSON.stringify(data)}`);
         console.log(`현재 연결된 클라이언트 수: ${this.controllers.size}`);
 
-        this.controllers.forEach(controllers => {
-            controllers.forEach(controller => {
+        for (const [clientId, controllers] of this.controllers) {
+            for (const controller of controllers) {
                 try {
                     controller.enqueue(encoded);
                 } catch (error) {
                     console.error('메시지 전송 중 오류 발생:', error);
                     this.removeController(controller);
                 }
-            });
-        });
+            }
+        }
     }
 
     // 모든 채널 목록 반환
@@ -211,9 +214,9 @@ class ChannelConnectionManager {
     // 현재 연결 수 반환
     public get connectionCount(): number {
         let count = 0;
-        this.controllers.forEach(controllers => {
+        for (const [_, controllers] of this.controllers) {
             count += controllers.size;
-        });
+        }
         return count;
     }
 }
@@ -312,7 +315,7 @@ export async function POST(request: NextRequest) {
 
         console.log(`채널 관리 API 호출: ${action}`, data);
 
-        let result;
+        let result: Channel | boolean;
 
         switch (action) {
             case 'createChannel':
@@ -335,7 +338,7 @@ export async function POST(request: NextRequest) {
                 result = channelManager.deleteChannel(channelId);
                 return NextResponse.json({ success: result });
 
-            case 'joinChannel':
+            case 'joinChannel': {
                 if (!channelId || !userId) {
                     return NextResponse.json(
                         { error: "channelId와 userId가 필요합니다" },
@@ -359,6 +362,7 @@ export async function POST(request: NextRequest) {
                     channel: channelManager.getChannel(channelId),
                     users: channelManager.getChannelUsers(channelId)
                 });
+            }
 
             case 'leaveChannel':
                 if (!channelId || !userId) {

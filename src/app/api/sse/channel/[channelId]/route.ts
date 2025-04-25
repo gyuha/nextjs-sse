@@ -323,7 +323,7 @@ export async function POST(
       }
     });
   } catch (error) {
-    console.error(`채널 메시지 처리 중 오류 발생:`, error);
+    console.error('채널 메시지 처리 중 오류 발생:', error);
     return NextResponse.json(
       { error: "메시지 처리 중 오류가 발생했습니다" },
       { 
