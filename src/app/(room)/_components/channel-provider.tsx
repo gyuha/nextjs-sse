@@ -77,18 +77,14 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({
           const parsedData = JSON.parse(event.data) as ChannelEvent;
           console.log("SSE 메시지 수신:", parsedData);
 
-          if (parsedData.type === "connect") {
+          if (parsedData.type !== "ping") {
             console.log("연결 성공 메시지:", parsedData);
             setConnectionStatus("connected");
             setTotalConnectionCount(parsedData.connectionCount || 0);
             setChannels(parsedData.channels || []);
-          } else if (
-            parsedData.type === "channel-created" ||
-            parsedData.type === "channel-updated"
-          ) {
             console.log("채널 생성/업데이트 메시지:", parsedData);
-          } else if (parsedData.type === "ping") {
-            console.log("핑 메시지 수신:", parsedData.timestamp);
+          } else {
+            console.log("ping 메시지 수신:", parsedData);
             setTotalConnectionCount(parsedData.connectionCount || 0);
           }
         } catch (error) {
