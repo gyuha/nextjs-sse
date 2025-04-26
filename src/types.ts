@@ -36,7 +36,4 @@ export type UserEvent = {
   channelId: string;
 };
 
-export type ChannelEvent = {
-  type: "channel-created" | "channel-updated" | "channel-deleted";
-  channel: Channel;
-};
+export type ChannelEvent = "channel-created" | "channel-updated" | "channel-deleted";
