@@ -1,5 +1,4 @@
-import type { Channel, ChannelEventType, User } from "@/types";
-import { time } from "console";
+import { DEFAULT_CHANNEL_ID, type Channel, type ChannelEventType, type User } from "@/types";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -18,7 +17,7 @@ export class ChannelConnectionManager {
     this.channels = new Map();
 
     // 기본 채널 생성
-    this.createChannel("general", "기본 채팅방");
+    this.createChannel(DEFAULT_CHANNEL_ID, "기본 채팅방");
   }
 
   public static getInstance(): ChannelConnectionManager {
@@ -121,7 +120,7 @@ export class ChannelConnectionManager {
     );
 
     // 사용자가 0명이면 채널 삭제 (general 채널은 예외)
-    if (channel.userCount === 0 && channelId !== "general") {
+    if (channel.userCount === 0 && channelId !== DEFAULT_CHANNEL_ID) {
       this.deleteChannel(channelId);
     } else {
       // 채널 업데이트 이벤트 브로드캐스트
