@@ -52,6 +52,7 @@ export class ChannelConnectionManager {
         break;
       }
     }
+    this.broadcast("channel-updated");
     console.log(`채널 연결 종료됨. 현재 연결 수: ${this.controllers.size}`);
   }
 
@@ -172,11 +173,12 @@ export class ChannelConnectionManager {
 
   // 현재 연결 수 반환
   public get connectionCount(): number {
-    let count = 0;
-    for (const [_, controllers] of this.controllers) {
-      count += controllers.size;
-    }
-    return count;
+    return this.controllers.size;
+    // let count = 0;
+    // for (const [_, controllers] of this.controllers) {
+    //   count += controllers.size;
+    // }
+    // return count;
   }
 }
 
@@ -198,14 +200,17 @@ export async function GET(request: NextRequest) {
         // 클라이언트 연결 등록
         channelManager.registerController(controller);
 
-        // 연결 시작 메시지를 즉시 전송
-        const connectMessage = `data: ${JSON.stringify({
-          type: "connect",
-          message: "연결됨",
-          connectionCount: channelManager.connectionCount,
-          channels: channelManager.getChannels(),
-        })}\n\n`;
-        controller.enqueue(new TextEncoder().encode(connectMessage));
+        // // 연결 시작 메시지를 즉시 전송
+        // const connectMessage = `data: ${JSON.stringify({
+        //   type: "connect",
+        //   message: "연결됨",
+        //   connectionCount: channelManager.connectionCount,
+        //   channels: channelManager.getChannels(),
+        // })}\n\n`;
+        // controller.enqueue(new TextEncoder().encode(connectMessage));
+
+        console.log("연결 시작 메시지 전송됨");
+        channelManager.broadcast("connect");
 
         // 15초마다 핑 메시지 전송하여 연결 유지
         pingInterval = setInterval(() => {
