@@ -1,4 +1,4 @@
-import type { Channel, ChannelEvent, User } from "@/types";
+import type { Channel, ChannelEventType, User } from "@/types";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -121,7 +121,7 @@ class ChannelConnectionManager {
   }
 
   // 모든 클라이언트에 메시지 전송
-  public broadcast(channelEvent: ChannelEvent): void {
+  public broadcast(channelEvent: ChannelEventType): void {
     if (this.controllers.size === 0) {
       console.log("활성 연결이 없습니다.");
       return;
@@ -159,13 +159,6 @@ class ChannelConnectionManager {
     return this.channels.get(channelId);
   }
 
-  // 특정 채널의 사용자 목록 반환
-  public getChannelUsers(channelId: string): User[] {
-    const userMap = this.channelUsers.get(channelId);
-    if (!userMap) return [];
-
-    return Array.from(userMap.values());
-  }
 
   // 현재 연결 수 반환
   public get connectionCount(): number {
