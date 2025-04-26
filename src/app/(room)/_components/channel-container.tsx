@@ -23,17 +23,8 @@ import { MessageSquare, Plus, Users } from "lucide-react";
 import { useState } from "react";
 import { useChannelContext } from "./channel-provider";
 import { set } from "date-fns";
-
-// Sample chat room data
-let chatChannels = [
-  { id: 1, name: "일반 채팅", users: 12 },
-  { id: 2, name: "게임 토론", users: 8 },
-  { id: 3, name: "음악 이야기", users: 5 },
-  { id: 4, name: "영화 팬", users: 15 },
-  { id: 5, name: "여행 정보", users: 7 },
-  { id: 6, name: "요리 레시피", users: 9 },
-  { id: 7, name: "스포츠 토크", users: 11 },
-];
+import { faker } from "@faker-js/faker/locale/ko";
+import router from "next/router";
 
 const ChannelContainer = (): React.JSX.Element | null => {
   const {
@@ -42,7 +33,7 @@ const ChannelContainer = (): React.JSX.Element | null => {
     channels,
     totalConnectionCount,
   } = useChannelContext();
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(faker.person.fullName());
   const [error, setError] = useState("");
   const [newRoomName, setNewRoomName] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -58,13 +49,8 @@ const ChannelContainer = (): React.JSX.Element | null => {
       return;
     }
 
-    setError("");
-    // Here you would typically navigate to the chat room or connect to a socket
-    alert(
-      `${username}님이 "${
-        chatChannels.find((room) => room.id === selectedRoom)?.name
-      }" 채팅방에 입장합니다`
-    );
+    // 선택한 채널로 이동
+    router.push(`/chat/${currentChannelId}?username=${encodeURIComponent(username)}`);
   };
 
   const handleCreateRoom = () => {
@@ -72,12 +58,13 @@ const ChannelContainer = (): React.JSX.Element | null => {
       return;
     }
 
-    const newId = Math.max(...chatChannels.map((room) => room.id)) + 1;
-    const newRoom = { id: newId, name: newRoomName, users: 0 };
-    chatChannels = [...chatChannels, newRoom];
-    setNewRoomName("");
-    setIsDialogOpen(false);
-    setSelectedRoom(newId);
+
+    // const newId = Math.max(...chatChannels.map((room) => room.id)) + 1;
+    // const newRoom = { id: newId, name: newRoomName, users: 0 };
+    // chatChannels = [...chatChannels, newRoom];
+    // setNewRoomName("");
+    // setIsDialogOpen(false);
+    // setSelectedRoom(newId);
   };
 
   return (
@@ -100,7 +87,10 @@ const ChannelContainer = (): React.JSX.Element | null => {
                       ? "bg-primary text-primary-foreground"
                       : "hover:bg-muted"
                   }`}
-                  onKeyUp={() => setCurrentChannelId(channel.id)}
+                  onClick={() => {
+                    console.log("selected channel", channel);
+                    setCurrentChannelId(channel.id);
+                  }}
                 >
                   <div className="flex items-center gap-2">
                     <MessageSquare className="h-5 w-5" />
