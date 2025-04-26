@@ -191,9 +191,11 @@ export async function GET(
     
     // 클라이언트에 주기적으로 핑 메시지를 보내기 위한 타이머 ID
     let pingInterval: NodeJS.Timeout | null = null;
+    let controller: ReadableStreamController<Uint8Array>;
     
     const stream = new ReadableStream({
-      start(controller) {
+      start(ctrl) {
+        controller = ctrl;
         // 클라이언트 연결 및 사용자 등록 (채널별)
         connectionManager.registerController(channelId, controller, user);
         
