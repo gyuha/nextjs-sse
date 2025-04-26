@@ -1,7 +1,8 @@
-import { type ChannelEvent, type ConnectionStatus, type Channel, DEFAULT_CHANNEL_ID } from "@/types";
+"use client";
+import type { Channel, ChannelEvent, ConnectionStatus } from "@/types";
+import { DEFAULT_CHANNEL_ID } from "@/types";
+import { faker } from "@faker-js/faker/locale/ko";
 import type React from "react";
-import { ConnectionStatus } from '../../../types';
-import { use } from 'react';
 import {
   createContext,
   useCallback,
@@ -10,7 +11,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { faker } from "@faker-js/faker/locale/ko";
 
 interface ChannelContextState {
   currentChannelId: string;
@@ -36,12 +36,21 @@ interface ChannelProviderProps {
 export const ChannelProvider: React.FC<ChannelProviderProps> = ({
   children,
 }: ChannelProviderProps) => {
-  const [currentChannelId, setCurrentChannelId] = useState<string>(DEFAULT_CHANNEL_ID);
-  const [username, setUsername] = useState<string>(window.localStorage.getItem("chatUsername") || faker.person.fullName());
+  const [currentChannelId, setCurrentChannelId] =
+    useState<string>(DEFAULT_CHANNEL_ID);
+  const [username, setUsername] = useState<string>(faker.person.fullName());
   const [channels, setChannels] = useState<Channel[]>([]);
   const [totalConnectionCount, setTotalConnectionCount] = useState<number>(0);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
+
+  // 컴포넌트가 마운트되면 localStorage에서 username 가져오기
+  useEffect(() => {
+    const savedUsername = localStorage.getItem("chatUsername");
+    if (savedUsername) {
+      setUsername(savedUsername);
+    }
+  }, []);
 
   // 현재 이벤트 소스 참조를 저장하기 위한 ref
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -51,7 +60,6 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({
   const retryCountRef = useRef<number>(0);
   // 최대 재시도 횟수
   const MAX_RETRY_COUNT = 3;
-
 
   const createSSEConnection = useCallback(() => {
     setConnectionStatus("connecting");
@@ -132,7 +140,7 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({
       // 이벤트 소스 반환
       return eventSource;
     } catch (error) {
-      console.error('SSE 연결 생성 중 오류:', error);
+      console.error("SSE 연결 생성 중 오류:", error);
       setConnectionStatus("disconnected");
       return null;
     }
@@ -166,7 +174,7 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({
         connectionStatus,
         setUsername,
         totalConnectionCount,
-        setCurrentChannelId
+        setCurrentChannelId,
       }}
     >
       {children}
