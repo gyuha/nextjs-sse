@@ -1,5 +1,4 @@
-import { ChannelEvent, ConnectionStatus, type Channel } from "@/types";
-import { set } from "date-fns";
+import { type ChannelEvent, type ConnectionStatus, type Channel, DEFAULT_CHANNEL_ID } from "@/types";
 import type React from "react";
 import {
   createContext,
@@ -18,7 +17,6 @@ interface ChannelContextState {
 
 interface ChannelContextAction extends ChannelContextState {
   setCurrentChannelId: React.Dispatch<React.SetStateAction<string>>;
-  changeChannelId: (id: string) => void;
 }
 
 const ChannelContext = createContext<ChannelContextAction | undefined>(
@@ -32,7 +30,7 @@ interface ChannelProviderProps {
 export const ChannelProvider: React.FC<ChannelProviderProps> = ({
   children,
 }: ChannelProviderProps) => {
-  const [currentChannelId, setCurrentChannelId] = useState<string>("");
+  const [currentChannelId, setCurrentChannelId] = useState<string>(DEFAULT_CHANNEL_ID);
   const [channels, setChannels] = useState<Channel[]>([]);
   const [totalConnectionCount, setTotalConnectionCount] = useState<number>(0);
   const [connectionStatus, setConnectionStatus] =
@@ -47,9 +45,6 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({
   // 최대 재시도 횟수
   const MAX_RETRY_COUNT = 3;
 
-  const changeChannelId = (id: string) => {
-    setCurrentChannelId(id);
-  };
 
   const createSSEConnection = useCallback(() => {
     setConnectionStatus("connecting");
@@ -165,8 +160,7 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({
         currentChannelId,
         channels,
         totalConnectionCount,
-        setCurrentChannelId,
-        changeChannelId(id) {},
+        setCurrentChannelId
       }}
     >
       {children}

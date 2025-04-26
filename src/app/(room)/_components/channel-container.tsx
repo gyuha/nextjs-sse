@@ -21,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, Plus, Users } from "lucide-react";
 import { useState } from "react";
+import { useChannelContext } from "./channel-provider";
+import { set } from "date-fns";
 
 // Sample chat room data
 let chatChannels = [
@@ -34,7 +36,12 @@ let chatChannels = [
 ];
 
 const ChannelContainer = (): React.JSX.Element | null => {
-  const [selectedRoom, setSelectedRoom] = useState<number | null>(null);
+  const {
+    currentChannelId,
+    setCurrentChannelId,
+    channels,
+    totalConnectionCount,
+  } = useChannelContext();
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [newRoomName, setNewRoomName] = useState("");
@@ -46,7 +53,7 @@ const ChannelContainer = (): React.JSX.Element | null => {
       return;
     }
 
-    if (selectedRoom === null) {
+    if (currentChannelId === null) {
       setError("채팅방을 선택해주세요");
       return;
     }
@@ -85,15 +92,15 @@ const ChannelContainer = (): React.JSX.Element | null => {
         <CardContent className="space-y-4">
           <ScrollArea className="h-[300px] rounded-md border p-2">
             <div className="space-y-2">
-              {chatChannels.map((channel) => (
+              {channels.map((channel) => (
                 <div
                   key={channel.id}
                   className={`flex items-center justify-between rounded-lg p-3 cursor-pointer transition-colors ${
-                    selectedRoom === channel.id
+                    currentChannelId === channel.id
                       ? "bg-primary text-primary-foreground"
                       : "hover:bg-muted"
                   }`}
-                  onClick={() => setSelectedRoom(channel.id)}
+                  onKeyUp={() => setCurrentChannelId(channel.id)}
                 >
                   <div className="flex items-center gap-2">
                     <MessageSquare className="h-5 w-5" />
@@ -101,7 +108,7 @@ const ChannelContainer = (): React.JSX.Element | null => {
                   </div>
                   <div className="flex items-center gap-1 text-sm">
                     <Users className="h-4 w-4" />
-                    <span>{channel.users}</span>
+                    <span>{channel.userCount}</span>
                   </div>
                 </div>
               ))}

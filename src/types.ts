@@ -47,3 +47,5 @@ export type ChannelEvent = {
   channels?: Channel[];
   connectionCount: number;
 }
+
+export const DEFAULT_CHANNEL_ID = "general";
