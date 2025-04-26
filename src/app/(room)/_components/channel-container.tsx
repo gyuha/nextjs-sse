@@ -20,20 +20,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, Plus, Users } from "lucide-react";
-import { useState } from "react";
+import { useState, use } from 'react';
 import { useChannelContext } from "./channel-provider";
-import { set } from "date-fns";
 import { faker } from "@faker-js/faker/locale/ko";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 
 const ChannelContainer = (): React.JSX.Element | null => {
   const {
+    username,
     currentChannelId,
     setCurrentChannelId,
     channels,
     totalConnectionCount,
+    setUsername,
   } = useChannelContext();
-  const [username, setUsername] = useState(faker.person.fullName());
+  const router = useRouter();
   const [error, setError] = useState("");
   const [newRoomName, setNewRoomName] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -49,8 +50,13 @@ const ChannelContainer = (): React.JSX.Element | null => {
       return;
     }
 
+    setError("");
+    
+    // 사용자 이름을 localStorage에 저장 (채팅 화면에서 사용하기 위함)
+    localStorage.setItem("chatUsername", username);
+    
     // 선택한 채널로 이동
-    router.push(`/chat/${currentChannelId}?username=${encodeURIComponent(username)}`);
+    router.push(`/channel?id=${currentChannelId}&username=${encodeURIComponent(username)}`);
   };
 
   const handleCreateRoom = () => {
@@ -72,8 +78,12 @@ const ChannelContainer = (): React.JSX.Element | null => {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">채팅채널 목록</CardTitle>
-          <CardDescription>
-            채팅채널을 선택하고 이름을 입력하여 입장하세요
+          <CardDescription className="flex justify-between items-center">
+            <span>채널을 선택하고 이름을 입력하여 입장하세요</span>
+            <span className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              총 {totalConnectionCount}명
+            </span>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

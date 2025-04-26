@@ -1,5 +1,7 @@
 import { type ChannelEvent, type ConnectionStatus, type Channel, DEFAULT_CHANNEL_ID } from "@/types";
 import type React from "react";
+import { ConnectionStatus } from '../../../types';
+import { use } from 'react';
 import {
   createContext,
   useCallback,
@@ -8,15 +10,19 @@ import {
   useRef,
   useState,
 } from "react";
+import { faker } from "@faker-js/faker/locale/ko";
 
 interface ChannelContextState {
   currentChannelId: string;
+  username: string;
   channels: Channel[];
   totalConnectionCount: number;
+  connectionStatus: ConnectionStatus;
 }
 
 interface ChannelContextAction extends ChannelContextState {
   setCurrentChannelId: React.Dispatch<React.SetStateAction<string>>;
+  setUsername: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const ChannelContext = createContext<ChannelContextAction | undefined>(
@@ -31,6 +37,7 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({
   children,
 }: ChannelProviderProps) => {
   const [currentChannelId, setCurrentChannelId] = useState<string>(DEFAULT_CHANNEL_ID);
+  const [username, setUsername] = useState<string>(window.localStorage.getItem("chatUsername") || faker.person.fullName());
   const [channels, setChannels] = useState<Channel[]>([]);
   const [totalConnectionCount, setTotalConnectionCount] = useState<number>(0);
   const [connectionStatus, setConnectionStatus] =
@@ -158,7 +165,10 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({
     <ChannelContext.Provider
       value={{
         currentChannelId,
+        username,
         channels,
+        connectionStatus,
+        setUsername,
         totalConnectionCount,
         setCurrentChannelId
       }}
