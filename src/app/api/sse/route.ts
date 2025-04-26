@@ -174,11 +174,6 @@ export class ChannelConnectionManager {
   // 현재 연결 수 반환
   public get connectionCount(): number {
     return this.controllers.size;
-    // let count = 0;
-    // for (const [_, controllers] of this.controllers) {
-    //   count += controllers.size;
-    // }
-    // return count;
   }
 }
 
@@ -199,15 +194,6 @@ export async function GET(request: NextRequest) {
         controller = ctrl;
         // 클라이언트 연결 등록
         channelManager.registerController(controller);
-
-        // // 연결 시작 메시지를 즉시 전송
-        // const connectMessage = `data: ${JSON.stringify({
-        //   type: "connect",
-        //   message: "연결됨",
-        //   connectionCount: channelManager.connectionCount,
-        //   channels: channelManager.getChannels(),
-        // })}\n\n`;
-        // controller.enqueue(new TextEncoder().encode(connectMessage));
 
         console.log("연결 시작 메시지 전송됨");
         channelManager.broadcast("connect");
