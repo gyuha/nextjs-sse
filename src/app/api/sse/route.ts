@@ -95,6 +95,16 @@ export class ChannelConnectionManager {
     return false;
   }
 
+  public updateUserCount(channelId: string, userCount: number): Channel | undefined {
+    const channel = this.channels.get(channelId);
+    if (channel) {
+      channel.userCount = userCount;
+      this.broadcast("channel-updated");
+      return channel;
+    }
+    return undefined;
+  }
+
   // 사용자를 채널에서 제거
   public removeUserFromChannel(channelId: string): boolean {
     if (!this.channels.has(channelId)) {
