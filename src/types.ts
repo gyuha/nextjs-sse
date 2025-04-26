@@ -36,11 +36,14 @@ export type UserEvent = {
   channelId: string;
 };
 
-export type ChannelEventType = "connect" | "channel-created" | "channel-updated" | "channel-deleted";
+export type ConnectionStatus = "connected" | "connecting" | "disconnected";
+
+export type ChannelEventType = "connect" | "channel-created" | "channel-updated" | "channel-deleted" | "ping";
 
 export type ChannelEvent = {
   type: ChannelEventType;
+  timestamp: string;
   message?: string;
-  channels: Channel[];
+  channels?: Channel[];
   connectionCount: number;
 }
