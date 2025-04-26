@@ -1,10 +1,13 @@
 import type { Message, User, UserEvent } from "@/types";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { ChannelConnectionManager } from "@/app/api/sse/route";
+
+const channelManager = ChannelConnectionManager.getInstance();
 
 // 채널별 SSE 연결을 관리하는 클래스
-class SSEConnectionManager {
-  private static instance: SSEConnectionManager;
+class SSEMessageManager {
+  private static instance: SSEMessageManager;
   private channelControllers: Map<string, Set<ReadableStreamController<unknown>>>;
   private channelUsers: Map<string, Map<string, User>>; // 채널별 접속 사용자 관리
 
@@ -14,11 +17,11 @@ class SSEConnectionManager {
   }
 
   // 싱글톤 패턴 사용
-  public static getInstance(): SSEConnectionManager {
-    if (!SSEConnectionManager.instance) {
-      SSEConnectionManager.instance = new SSEConnectionManager();
+  public static getInstance(): SSEMessageManager {
+    if (!SSEMessageManager.instance) {
+      SSEMessageManager.instance = new SSEMessageManager();
     }
-    return SSEConnectionManager.instance;
+    return SSEMessageManager.instance;
   }
 
   // 새 컨트롤러 등록 (채널별)
@@ -162,7 +165,7 @@ class SSEConnectionManager {
 }
 
 // 싱글톤 인스턴스 가져오기
-const connectionManager = SSEConnectionManager.getInstance();
+const messageManager = SSEMessageManager.getInstance();
 
 // GET 요청 처리 - SSE 연결 설정
 export async function GET(
@@ -197,17 +200,17 @@ export async function GET(
       start(ctrl) {
         controller = ctrl;
         // 클라이언트 연결 및 사용자 등록 (채널별)
-        connectionManager.registerController(channelId, controller, user);
+        messageManager.registerController(channelId, controller, user);
         
         // 채널의 현재 사용자 목록
-        const channelUsers = connectionManager.getChannelUsers(channelId);
+        const channelUsers = messageManager.getChannelUsers(channelId);
         
         // 연결 시작 메시지를 즉시 전송
         const connectMessage = `data: ${JSON.stringify({ 
           type: "connect", 
           message: "연결됨", 
           channelId: channelId,
-          connectionCount: connectionManager.getChannelConnectionCount(channelId),
+          connectionCount: messageManager.getChannelConnectionCount(channelId),
           users: channelUsers,
           currentUser: user
         })}\n\n`;
@@ -220,12 +223,12 @@ export async function GET(
               type: "ping", 
               channelId: channelId,
               timestamp: new Date().toISOString(),
-              connectionCount: connectionManager.getChannelConnectionCount(channelId)
+              connectionCount: messageManager.getChannelConnectionCount(channelId)
             })}\n\n`;
             controller.enqueue(new TextEncoder().encode(pingMessage));
           } catch (error) {
             console.error(`채널 ${channelId} 핑 메시지 전송 중 오류:`, error);
-            connectionManager.removeController(channelId, controller, userId);
+            messageManager.removeController(channelId, controller, userId);
             if (pingInterval) {
               clearInterval(pingInterval);
               pingInterval = null;
@@ -237,7 +240,7 @@ export async function GET(
         // 연결이 종료될 때 컨트롤러 제거 및 리소스 정리
         request.signal.addEventListener("abort", () => {
           console.log(`채널 ${channelId} 사용자 ${userName}(${userId}) 연결 종료됨`);
-          connectionManager.removeController(channelId, controller, userId);
+          messageManager.removeController(channelId, controller, userId);
           if (pingInterval) {
             clearInterval(pingInterval);
             pingInterval = null;
@@ -247,7 +250,7 @@ export async function GET(
       },
       cancel() {
         console.log(`채널 ${channelId} 사용자 ${userName}(${userId}) 스트림 취소됨`);
-        connectionManager.removeController(channelId, controller, userId);
+        messageManager.removeController(channelId, controller, userId);
         if (pingInterval) {
           clearInterval(pingInterval);
           pingInterval = null;
@@ -311,7 +314,7 @@ export async function POST(
     }
     
     // 해당 채널의 모든 클라이언트에 메시지 브로드캐스트
-    connectionManager.broadcastToChannel(channelId, {
+    messageManager.broadcastToChannel(channelId, {
       type: "message",
       channelId: channelId,
       data: message

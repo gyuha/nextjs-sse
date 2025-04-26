@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 // Channel 연결을 관리하는 싱글톤 클래스
-class ChannelConnectionManager {
+export class ChannelConnectionManager {
   // 채널 이름과 채널 사용자 수만 관리 하자.. 사용자 목록은 해당 채널 에서 관리
   private static instance: ChannelConnectionManager;
   private controllers: Map<
@@ -158,7 +158,6 @@ class ChannelConnectionManager {
   public getChannel(channelId: string): Channel | undefined {
     return this.channels.get(channelId);
   }
-
 
   // 현재 연결 수 반환
   public get connectionCount(): number {
