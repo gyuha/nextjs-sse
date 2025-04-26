@@ -61,6 +61,9 @@ const ChannelContainer = (): React.JSX.Element | null => {
     // 선택한 채널로 이동
     router.push(`/channel?id=${currentChannelId}&username=${encodeURIComponent(username)}`);
   };
+
+  const handleCreateRoom = () => {
+    if (!newRoomName.trim()) {
       return;
     }
 
