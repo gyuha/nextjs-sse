@@ -1,5 +1,11 @@
 "use client";
-import type { Channel, DirectMessage, Message, User } from "@/types";
+import type {
+  Channel,
+  ConnectionStatus,
+  DirectMessage,
+  Message,
+  User,
+} from "@/types";
 import type React from "react";
 import {
   createContext,
@@ -44,9 +50,8 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   );
   const [userId, setUserId] = useState<string>(crypto.randomUUID());
   const [messages, setMessages] = useState<Message[]>([]);
-  const [connectionStatus, setConnectionStatus] = useState<
-    "disconnected" | "connecting" | "connected"
-  >("disconnected");
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus>("disconnected");
   const [channelUsers, setChannelUsers] = useState<User[]>([]);
   const [connectionCount, setConnectionCount] = useState<number>(0);
 

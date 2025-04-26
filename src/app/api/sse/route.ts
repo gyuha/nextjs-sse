@@ -1,4 +1,5 @@
 import type { Channel, ChannelEventType, User } from "@/types";
+import { time } from "console";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -141,6 +142,7 @@ export class ChannelConnectionManager {
     const message = `data: ${JSON.stringify({
       type: channelEvent,
       channels: this.getChannels(),
+      timestamp: new Date().toISOString(),
       connectionCount: this.connectionCount,
     })}\n\n`;
     const encoded = new TextEncoder().encode(message);
