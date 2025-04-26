@@ -1,5 +1,6 @@
 import type { Channel, ChannelEvent, User } from "@/types";
-import type { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Channel 연결을 관리하는 싱글톤 클래스
 class ChannelConnectionManager {
