@@ -29,7 +29,7 @@ class ChannelConnectionManager {
         if (!this.controllers.has(clientId)) {
             this.controllers.set(clientId, new Set());
         }
-        this.controllers.get(clientId)!.add(controller);
+        this.controllers.get(clientId)?.add(controller);
         console.log(`새 채널 연결 등록됨. 현재 연결 수: ${this.controllers.size}`);
     }
 
