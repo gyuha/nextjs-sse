@@ -52,11 +52,8 @@ const ChannelContainer = (): React.JSX.Element | null => {
 
     setError("");
     
-    // 클라이언트 측에서만 실행되는 코드
-    if (typeof window !== 'undefined') {
-      // 사용자 이름을 localStorage에 저장 (채팅 화면에서 사용하기 위함)
-      localStorage.setItem("chatUsername", username);
-    }
+    // 사용자 이름을 localStorage에 저장 (채팅 화면에서 사용하기 위함)
+    localStorage.setItem("chatUsername", username);
     
     // 선택한 채널로 이동
     router.push(`/channel?id=${currentChannelId}&username=${encodeURIComponent(username)}`);
