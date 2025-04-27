@@ -8,22 +8,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageSquare, Plus, Users } from "lucide-react";
-import { useState, use } from 'react';
-import { useChannelContext } from "./channel-provider";
-import { faker } from "@faker-js/faker/locale/ko";
+import { MessageSquare, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import ChannelMakeButton from "./channel-make-button";
+import { useChannelContext } from "./channel-provider";
 
 const ChannelContainer = (): React.JSX.Element | null => {
   const {
@@ -37,7 +28,6 @@ const ChannelContainer = (): React.JSX.Element | null => {
   const router = useRouter();
   const [error, setError] = useState("");
   const [newRoomName, setNewRoomName] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleJoin = () => {
     if (!username.trim()) {
@@ -57,20 +47,6 @@ const ChannelContainer = (): React.JSX.Element | null => {
     
     // 선택한 채널로 이동
     router.push(`/channel?id=${currentChannelId}&username=${encodeURIComponent(username)}`);
-  };
-
-  const handleCreateRoom = () => {
-    if (!newRoomName.trim()) {
-      return;
-    }
-
-
-    // const newId = Math.max(...chatChannels.map((room) => room.id)) + 1;
-    // const newRoom = { id: newId, name: newRoomName, users: 0 };
-    // chatChannels = [...chatChannels, newRoom];
-    // setNewRoomName("");
-    // setIsDialogOpen(false);
-    // setSelectedRoom(newId);
   };
 
   return (
@@ -115,41 +91,7 @@ const ChannelContainer = (): React.JSX.Element | null => {
             </div>
           </ScrollArea>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                <span>새 채팅채널 만들기</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>새 채팅채널 만들기</DialogTitle>
-                <DialogDescription>
-                  새로운 채팅채널의 이름을 입력하세요.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="py-4">
-                <Input
-                  placeholder="채팅채널 이름"
-                  value={newRoomName}
-                  onChange={(e) => setNewRoomName(e.target.value)}
-                />
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  취소
-                </Button>
-                <Button onClick={handleCreateRoom}>만들기</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <ChannelMakeButton />
 
           <div className="space-y-2">
             <label htmlFor="username" className="text-sm font-medium">

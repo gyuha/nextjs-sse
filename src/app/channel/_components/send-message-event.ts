@@ -22,7 +22,7 @@ export const sendMessage = async (
   };
 
   try {
-    const response = await fetch(`/api/sse/${channelId}`, {
+    const response = await fetch(`/api/sse/channel/${channelId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
