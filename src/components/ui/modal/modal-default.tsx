@@ -1,21 +1,40 @@
-import useWindowSize from '@/hooks/use-window-size';
-import { Button } from '@/components/ui/button';
-import StringToHtml from '@/components/ui/string-to-html';
-import Modal from '@/components/ui/modal/modal';
-import useModal from '@/stores/modal-store';
-import type React from 'react';
-import tw from 'twin.macro';
+'use client';
+import useWindowSize from "@/hooks/use-window-size";
+import { Button } from "@/components/ui/button";
+import StringToHtml from "@/components/ui/string-to-html";
+import Modal from "@/components/ui/modal/modal";
+import useModal from "@/stores/modal-store";
+import type React from "react";
+import { cn } from "@/lib/utils";
 
-const InfoContianer = tw.pre`my-6 justify-center gap-2.5 rounded-sm bg-zinc-100 px-4 py-3`;
-const ContentContianer = tw.div`justify-center gap-2.5 text-base`;
-const AlertContianer = tw.div`my-6 w-full justify-center gap-2.5 px-4 py-3 text-center text-base`;
+const InfoContianer = ({ children }: { children: React.ReactNode }) => (
+  <pre
+    className={cn(
+      "my-6 justify-center gap-2.5 rounded-sm bg-zinc-100 px-4 py-3"
+    )}
+  >
+    {children}
+  </pre>
+);
+const ContentContianer = ({ children }: { children: React.ReactNode }) => (
+  <div className={cn("justify-center gap-2.5 text-base")}> {children} </div>
+);
+const AlertContianer = ({ children }: { children: React.ReactNode }) => (
+  <div
+    className={cn(
+      "my-6 w-full justify-center gap-2.5 px-4 py-3 text-center text-base"
+    )}
+  >
+    {children}
+  </div>
+);
 
 const ModalDefault = ({
   className,
-  size = 'md',
+  size = "md",
   ...rest
 }: ModalProps): React.JSX.Element | null => {
-  if (!('alert' in rest) && !('content' in rest)) {
+  if (!("alert" in rest) && !("content" in rest)) {
     return null;
   }
 
@@ -37,19 +56,22 @@ const ModalDefault = ({
   } = rest;
 
   return (
-    <Modal.Container size={size} className={isMobile ? 'justify-center gap-4 bg-white' : ''}>
+    <Modal.Container
+      size={size}
+      className={isMobile ? "justify-center gap-4 bg-white" : ""}
+    >
       <Modal.Header hideCloseButton={hideCloseButton} handleClose={handleClose}>
         {title}
       </Modal.Header>
       <Modal.Content className={className}>
         <>
-          {'info' in rest && <InfoContianer>{rest.info}</InfoContianer>}
-          {'alert' in rest && (
+          {"info" in rest && <InfoContianer>{rest.info}</InfoContianer>}
+          {"alert" in rest && (
             <AlertContianer>
               <StringToHtml text={rest.alert} />
             </AlertContianer>
           )}
-          {'content' in rest && (
+          {"content" in rest && (
             <ContentContianer>
               <StringToHtml text={rest.content} />
             </ContentContianer>
@@ -61,21 +83,21 @@ const ModalDefault = ({
           {handleCancel !== undefined ? (
             !hideBottomCancelButton ? (
               <Button
-                variant={'secondary'}
-                scale={'lg'}
+                variant={"secondary"}
+                size={"lg"}
                 className="min-w-0 border-[1.5px] border-neutral-900"
                 onClick={() => {
                   handleCancel();
                 }}
               >
-                {txtCancel ? txtCancel : t('common.button.cancel')}
+                취소
               </Button>
             ) : null
           ) : null}
           {txtCancel && !handleCancel && (
             <Button
-              variant={'secondary'}
-              scale={'lg'}
+              variant={"secondary"}
+              size={"lg"}
               className="min-w-0 border-[1.5px] border-neutral-900"
               onClick={closeModal}
             >
@@ -83,12 +105,12 @@ const ModalDefault = ({
             </Button>
           )}
           <Button
-            variant={'default'}
-            scale={'lg'}
+            variant={"default"}
+            size={"lg"}
             onClick={handleOk ? handleOk : closeModal}
-            className={hideBottomCancelButton ? 'w-40' : 'min-w-0'}
+            className={hideBottomCancelButton ? "w-40" : "min-w-0"}
           >
-            {txtOK ? txtOK : t('common.button.ok')}
+            확인
           </Button>
         </Modal.Footer>
       )}

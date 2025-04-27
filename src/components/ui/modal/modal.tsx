@@ -1,12 +1,12 @@
+'use client';
 import ModalContainer from "@/components/ui/modal/modal-container";
 import ModalDefault from "@/components/ui/modal/modal-default";
 import ModalForm from "@/components/ui/modal/modal-form";
 import ModalHeader from "@/components/ui/modal/modal-header";
 import { cn } from "@/lib/utils";
 import useModal from "@/stores/modal-store";
-import React, { useEffect } from "react";
-import tw from "twin.macro";
-import { JSX } from "react";
+import type React from "react";
+import { useEffect } from "react";
 
 export const MODAL_Z_INDEX = 50;
 export const MODAL_SIZE: Record<ModalSize, string> = {
@@ -29,13 +29,16 @@ const Modal = ({
   const { setFocusLockDisabled } = useModal();
 
   useEffect(() => {
-    if (forcusLockDisabled) {
-      setFocusLockDisabled(forcusLockDisabled);
+    if (forcusLockDisabled !== undefined) {
+      setFocusLockDisabled(!!forcusLockDisabled);
     }
+    
     return () => {
-      setFocusLockDisabled(false);
+      if (forcusLockDisabled) {
+        setFocusLockDisabled(false);
+      }
     };
-  }, []);
+  }, [forcusLockDisabled]);
 
   if ("alert" in rest || "content" in rest) {
     return <ModalDefault {...rest} className={className} size={size} />;
@@ -85,7 +88,7 @@ Modal.Ground = ({ children }: { children: React.ReactNode }) => (
  */
 Modal.Container = ModalContainer;
 Modal.Header = ModalHeader;
-Modal.Content = ({ children }: { children: React.ReactNode }) => (
+Modal.Content = ({ children, className }: { children: React.ReactNode, className?: string  }) => (
   <div className={cn("w-full overflow-y-auto overflow-x-hidden")}>
     {children}
   </div>

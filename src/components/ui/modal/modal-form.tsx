@@ -1,3 +1,4 @@
+'use client';
 import Modal from '@/components/ui/modal/modal';
 import type React from 'react';
 

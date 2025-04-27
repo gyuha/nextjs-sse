@@ -1,3 +1,4 @@
+'use client';
 import { MODAL_SIZE } from "@/components/ui/modal/modal";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
