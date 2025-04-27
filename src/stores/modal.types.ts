@@ -37,6 +37,7 @@ type CustomModalProps = {
 };
 
 type ModalProps = {
+  id?: string;
   className?: string;
   size?: ModalSize;
   height?: string;
