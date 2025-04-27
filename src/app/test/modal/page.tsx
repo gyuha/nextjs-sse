@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -21,7 +22,7 @@ import { uuid } from "@/lib/utils";
 import useModal from "@/stores/modal-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type React from "react";
-import { Form, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const FormSchema = z.object({
