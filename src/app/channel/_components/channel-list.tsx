@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Channel } from "./types";
+import type { Channel } from "@/types";
 import { useChattingProvider } from "@/app/channel/_components/chatting-provider";
 
 interface ChannelListProps {

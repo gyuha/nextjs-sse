@@ -87,7 +87,7 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
       try {
         // URL에 사용자 정보 추가
         const url = new URL(
-          `/api/sse/${targetChannelId}`,
+          `/api/sse/channel/${targetChannelId}`,
           window.location.origin
         );
         url.searchParams.append("userName", name);
