@@ -86,7 +86,7 @@ const CustomModalContent = () => {
   const { closeModal, openModal } = useModal();
   return (
     <div className="w-[340px] rounded-md p-4">
-      <h1 className="font-semibold text-lg">Custom Modal</h1>
+      <h1 className="font-semibold text-lg">Custom Modal {uuid()}</h1>
       <Button
         variant={"default"}
         onClick={() =>
