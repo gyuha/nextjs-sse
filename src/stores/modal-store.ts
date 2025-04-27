@@ -1,5 +1,5 @@
-import type React from 'react';
-import type{ JSX } from 'react';
+import React from 'react';
+import type { JSX } from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';

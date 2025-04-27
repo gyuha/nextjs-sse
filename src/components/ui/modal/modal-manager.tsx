@@ -1,3 +1,4 @@
+'use client';
 import Modal, { MODAL_Z_INDEX } from '@/components/ui/modal/modal';
 import ModalBackdrop from '@/components/ui/modal/modal-backdrop';
 import { uuid } from '@/lib/utils';
