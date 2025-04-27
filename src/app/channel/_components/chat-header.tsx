@@ -1,18 +1,25 @@
 "use client";
 
-import { useChattingProvider } from "@/app/channel/_components/chatting-provider";
-import { Badge } from "@/components/ui/badge";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useMobile } from "@/hooks/use-mobile";
+import { useChattingProvider } from "./chat-provider";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-
-interface ChannelHeaderProps {
-  currentChannel: string;
+interface ChatHeaderProps {
+  toggleSidebar: () => void;
 }
 
-export function ChannelHeader() {
-  const { channelId, channels, connectionCount, channelUsers } = useChattingProvider();
+export function ChatHeader({ toggleSidebar }: ChatHeaderProps) {
+  const { channelId, channels, connectionCount, channelUsers } =
+    useChattingProvider();
+  const isMobile = useMobile();
 
   // 채널 이름 가져오기
   const getCurrentChannelName = () => {
@@ -22,8 +29,8 @@ export function ChannelHeader() {
     return "Unknown";
   };
 
-  const isChannelType = channels.some(c => c.id === channelId);
-  
+  const isChannelType = channels.some((c) => c.id === channelId);
+
   // 접속 시간 포맷팅 함수
   const formatJoinTime = (joinTime: string) => {
     try {
@@ -32,16 +39,27 @@ export function ChannelHeader() {
       return joinTime;
     }
   };
-  
+
   return (
-    <div className="p-4 border-b border-neutral-200 flex items-center justify-between">
+    <div className="flex items-center justify-between px-4 py-3 border-b">
       <h2 className="font-semibold text-lg">
-        {isChannelType ? `# ${getCurrentChannelName()}` : getCurrentChannelName()}
+        {isMobile && (
+          <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+            <Menu className="h-5 w-5" />
+          </Button>
+        )}
+        {isChannelType
+          ? `# ${getCurrentChannelName()}`
+          : getCurrentChannelName()}
       </h2>
-      
+
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
             <span>접속자</span>
             <Badge variant="secondary">{connectionCount}</Badge>
           </Button>
@@ -57,7 +75,7 @@ export function ChannelHeader() {
               </div>
             ) : (
               <ul className="divide-y">
-                {channelUsers.map((user: User) => (
+                {channelUsers.map((user) => (
                   <li key={user.id} className="p-3 hover:bg-muted/50">
                     <div className="font-medium">{user.name}</div>
                     <div className="text-xs text-muted-foreground">
@@ -73,4 +91,3 @@ export function ChannelHeader() {
     </div>
   );
 }
-

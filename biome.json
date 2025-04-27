@@ -21,7 +21,8 @@
     "rules": {
       "recommended": true,
       "a11y": {
-        "useKeyWithClickEvents": "off"
+        "useKeyWithClickEvents": "off",
+        "useButtonType": "off"
       },
       "correctness": {
         "useExhaustiveDependencies": "off"
