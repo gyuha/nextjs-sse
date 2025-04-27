@@ -50,7 +50,7 @@ const ModalContainer = ({
     <motion.div
       tabIndex={-1}
       className={cn(
-        "relative inset-0 rounded-xl",
+        "relative inset-0 rounded-xl z-60",
         "gap-6 rounded-xl border shadow-sm m-1",
         "flex max-h-full max-w-full flex-col scroll-auto",
         isMobile ? "h-full !w-full px-6" : "p-6",

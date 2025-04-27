@@ -1,13 +1,13 @@
-'use client';
-import { cn } from '@/lib/utils';
-import useModal from '@/stores/modal-store';
-import { motion } from 'framer-motion';
-import type React from 'react';
-import { useEffect, useState } from 'react';
+"use client";
+import { cn } from "@/lib/utils";
+import useModal from "@/stores/modal-store";
+import { motion } from "framer-motion";
+import type React from "react";
+import { useEffect, useState } from "react";
 
 interface IModalBackdropProps {
   className?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   zIndex: number;
 }
 
@@ -19,29 +19,19 @@ const ModalBackdrop = ({
   const { modals, modalCount, closeModal } = useModal();
   const [opening, setOpening] = useState(false);
 
-  const closeModalByClick = () => {
-    if (opening) {
-      return;
-    }
-    if (modals[modalCount() - 1]?.backdropDismiss === true) {
-      return;
-    }
-    closeModal();
-  };
-
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (modalCount()) {
       // 모달이 열리면 body의 overflow를 hidden으로 설정
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
       // 모달이 닫히면 overflow 속성을 제거
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
 
     // 컴포넌트가 언마운트될 때 원래 상태로 복원
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [modals]);
 
@@ -52,10 +42,10 @@ const ModalBackdrop = ({
   return (
     <motion.div
       className={cn(
-        'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm',
-        'bg-neutral-950 bg-opacity-60',
+        "fixed inset-0 z-40 flex items-center justify-center backdrop-blur-sm",
+        "bg-neutral-950 bg-opacity-60",
         `z-${zIndex}`,
-        className,
+        className
       )}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -63,7 +53,6 @@ const ModalBackdrop = ({
       transition={{ duration: 0.2 }}
       onAnimationStart={() => setOpening(true)}
       onAnimationComplete={() => setOpening(false)}
-      onClick={() => closeModalByClick()}
     >
       {children}
     </motion.div>
