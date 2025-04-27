@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import ModalContainer from "@/components/ui/modal/modal-container";
 import ModalDefault from "@/components/ui/modal/modal-default";
 import ModalForm from "@/components/ui/modal/modal-form";
@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import useModal from "@/stores/modal-store";
 import type React from "react";
 import { useEffect } from "react";
+import { ChatContainer } from "../../../app/channel/_components/chat-container";
 
 export const MODAL_Z_INDEX = 50;
 export const MODAL_SIZE: Record<ModalSize, string> = {
@@ -32,7 +33,7 @@ const Modal = ({
     if (forcusLockDisabled !== undefined) {
       setFocusLockDisabled(!!forcusLockDisabled);
     }
-    
+
     return () => {
       if (forcusLockDisabled) {
         setFocusLockDisabled(false);
@@ -88,7 +89,13 @@ Modal.Ground = ({ children }: { children: React.ReactNode }) => (
  */
 Modal.Container = ModalContainer;
 Modal.Header = ModalHeader;
-Modal.Content = ({ children, className }: { children: React.ReactNode, className?: string  }) => (
+Modal.Content = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
   <div className={cn("w-full overflow-y-auto overflow-x-hidden")}>
     {children}
   </div>

@@ -1,12 +1,15 @@
-'use client';
+"use client";
 import { MODAL_SIZE } from "@/components/ui/modal/modal";
+import useMobileDetection from "@/hooks/use-mobile-detection";
 import { cn } from "@/lib/utils";
+import useModal from "@/stores/modal-store";
 import { motion } from "framer-motion";
 import type React from "react";
+
 const effect = {
   hidden: {
     y: "-2vh",
-    scale: 1.1,
+    scale: 0.9,
     opacity: 0,
   },
   visible: {
@@ -40,23 +43,24 @@ const ModalContainer = ({
   className,
   size = "md",
 }: IModalContainerProps): React.JSX.Element | null => {
-  const isMobile = window.innerWidth < 768;
+  const isMobile = useMobileDetection();
+  const { modalCount } = useModal();
+  console.log("📢[modal-container.tsx:46]: isMobile: ", isMobile);
 
   return (
     <motion.div
       tabIndex={-1}
-      // biome-ignore lint/a11y/useSemanticElements: <explanation>
-      role="dialog"
       className={cn(
-        "relative inset-0",
+        "relative inset-0 rounded-xl",
+        "gap-6 rounded-xl border shadow-sm m-1",
         "flex max-h-full max-w-full flex-col scroll-auto",
-        isMobile ? "h-full !w-full px-6" : "p-10",
+        isMobile ? "h-full !w-full px-6" : "p-6",
         className || "gap-6 bg-white shadow"
       )}
       style={{ width: MODAL_SIZE[size || "md"] }}
+      animate={{ opacity: modalCount() ? 1 : 0 }}
       variants={effect}
       initial="hidden"
-      animate="visible"
       exit="exit"
       onClick={(event) => event.stopPropagation()}
     >

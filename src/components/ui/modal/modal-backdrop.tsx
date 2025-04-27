@@ -1,7 +1,7 @@
 'use client';
 import { cn } from '@/lib/utils';
 import useModal from '@/stores/modal-store';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 
@@ -45,26 +45,28 @@ const ModalBackdrop = ({
     };
   }, [modals]);
 
+  if (!modalCount()) {
+    return null;
+  }
+
   return (
-    <AnimatePresence initial={false}>
-      <motion.div
-        className={cn(
-          'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm',
-          'bg-neutral-950 bg-opacity-60',
-          `z-${zIndex}`,
-          !modalCount() && 'pointer-events-none',
-          className,
-        )}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: modalCount() ? 1 : 0 }}
-        exit={{ opacity: 0 }}
-        onAnimationStart={() => setOpening(true)}
-        onAnimationComplete={() => setOpening(false)}
-        onClick={() => closeModalByClick()}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <motion.div
+      className={cn(
+        'fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm',
+        'bg-neutral-950 bg-opacity-60',
+        `z-${zIndex}`,
+        className,
+      )}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      onAnimationStart={() => setOpening(true)}
+      onAnimationComplete={() => setOpening(false)}
+      onClick={() => closeModalByClick()}
+    >
+      {children}
+    </motion.div>
   );
 };
 
