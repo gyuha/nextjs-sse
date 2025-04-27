@@ -38,19 +38,18 @@ const Modals = () => {
   }, [handleKeyUp]);
 
   return (
-    <ModalBackdrop zIndex={MODAL_Z_INDEX}>
-      <AnimatePresence initial={false} mode="wait">
-        {modals.map((modalProps, idx) => {
-          // 모달에 id가 있으면 그것을 사용하고, 없으면 인덱스를 사용
-          const modalKey = modalProps.id || `modal-${idx}`;
-          return (
-            <Modal.Ground key={modalKey}>
-              <Modal {...modalProps} />
-            </Modal.Ground>
-          );
-        })}
-      </AnimatePresence>
-    </ModalBackdrop>
+    <div>
+      <ModalBackdrop zIndex={MODAL_Z_INDEX}/>
+      {modals.map((modalProps, idx) => {
+        // 모달에 id가 있으면 그것을 사용하고, 없으면 인덱스를 사용
+        const modalKey = modalProps.id || `modal-${idx}`;
+        return (
+          <Modal.Ground key={modalKey}>
+            <Modal {...modalProps} />
+          </Modal.Ground>
+        );
+      })}
+    </div>
   );
 };
 

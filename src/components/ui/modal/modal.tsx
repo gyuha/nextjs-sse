@@ -74,15 +74,30 @@ Ground
 /**
  *  모달의 배경
  */
-Modal.Ground = ({ children }: { children: React.ReactNode }) => (
-  <div
-    className={cn(
-      "fixed inset-0 z-50 flex h-full w-full items-center justify-center"
-    )}
-  >
-    {children}
-  </div>
-);
+Modal.Ground = ({ children }: { children: React.ReactNode }) => {
+  const { modals, modalCount, closeModal } = useModal();
+
+  const closeModalByClick = () => {
+    if (modals[modalCount() - 1]?.backdropDismiss === true) {
+      return;
+    }
+    closeModal();
+  };
+
+  return (
+    <div
+      className={cn(
+        "fixed inset-0 z-50 flex h-full w-full items-center justify-center"
+      )}
+      onClick={(e) => {
+        e.stopPropagation();
+        closeModalByClick();
+      }}
+    >
+      {children}
+    </div>
+  );
+};
 
 /**
  * 모달의 컨테이너
