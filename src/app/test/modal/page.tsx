@@ -4,19 +4,101 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import Modal from "@/components/ui/modal/modal";
 import { uuid } from "@/lib/utils";
 import useModal from "@/stores/modal-store";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type React from "react";
+import { Form, useForm } from "react-hook-form";
+import { z } from "zod";
 
-const CustomModalContent = ({ size }: any) => {
-  const { closeModal } = useModal();
+const FormSchema = z.object({
+  username: z.string().min(2, {
+    message: "Username must be at least 2 characters.",
+  }),
+});
+
+const InputForm = () => {
+  const { openModal, closeModal } = useModal();
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      username: "",
+    },
+  });
+
+  const onSubmit = (data: z.infer<typeof FormSchema>) => {
+    openModal({
+      title: "You submitted the following values:",
+      content: (
+        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+        </pre>
+      ),
+    });
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
+        <Modal.Content>
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input placeholder="shadcn" {...field} />
+                </FormControl>
+                <FormDescription>
+                  This is your public display name.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </Modal.Content>
+        <Modal.Footer>
+          <Button type="button" variant="secondary" onClick={closeModal}>
+            Close
+          </Button>
+          <Button type="submit">Submit</Button>
+        </Modal.Footer>
+      </form>
+    </Form>
+  );
+};
+
+const CustomModalContent = () => {
+  const { closeModal, openModal } = useModal();
   return (
     <div className="w-[340px] rounded-md p-4">
       <h1 className="font-semibold text-lg">Custom Modal</h1>
+      <Button
+        variant={"default"}
+        onClick={() =>
+          openModal({
+            title: `modal #${uuid()}`,
+            custom: <CustomModalContent />,
+            size: "md",
+          })
+        }
+      >
+        Open Modal
+      </Button>
       <Button variant={"secondary"} onClick={() => closeModal()}>
         Close
       </Button>
@@ -24,17 +106,14 @@ const CustomModalContent = ({ size }: any) => {
   );
 };
 
-const Modal = (): React.JSX.Element | null => {
+const ModalTest = (): React.JSX.Element | null => {
   const { openModal } = useModal();
 
   return (
     <div className="m-12">
       <Card className="w-full m-1">
         <CardHeader>
-          <CardTitle>Create project</CardTitle>
-          <CardDescription>
-            Deploy your new project in one-click.
-          </CardDescription>
+          <CardTitle>모달</CardTitle>
         </CardHeader>
         <CardContent>
           <Button
@@ -55,8 +134,7 @@ information`,
 
       <Card className="w-full m-1">
         <CardHeader>
-          <CardTitle>Modal</CardTitle>
-          <CardDescription>Modal</CardDescription>
+          <CardTitle>모달 종류 별</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-row gap-2">
@@ -101,8 +179,7 @@ information`,
 
       <Card className="w-full m-1">
         <CardHeader>
-          <CardTitle>Modal</CardTitle>
-          <CardDescription>Modal</CardDescription>
+          <CardTitle>모달 커스텀</CardTitle>
         </CardHeader>
         <CardContent>
           <Button
@@ -111,7 +188,27 @@ information`,
               openModal({
                 title: `modal #${uuid()}`,
                 custom: <CustomModalContent />,
-                size: 'md',
+                size: "md",
+              })
+            }
+          >
+            Open
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="w-full m-1">
+        <CardHeader>
+          <CardTitle>모달 Form</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Button
+            variant={"default"}
+            onClick={() =>
+              openModal({
+                title: `modal #${uuid()}`,
+                custom: <InputForm />,
+                size: "md",
               })
             }
           >
@@ -123,4 +220,4 @@ information`,
   );
 };
 
-export default Modal;
+export default ModalTest;
