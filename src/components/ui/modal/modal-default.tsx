@@ -1,11 +1,11 @@
-'use client';
-import useWindowSize from "@/hooks/use-window-size";
+"use client";
 import { Button } from "@/components/ui/button";
-import StringToHtml from "@/components/ui/string-to-html";
 import Modal from "@/components/ui/modal/modal";
+import StringToHtml from "@/components/ui/string-to-html";
+import { useMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import useModal from "@/stores/modal-store";
 import type React from "react";
-import { cn } from "@/lib/utils";
 
 const InfoContianer = ({ children }: { children: React.ReactNode }) => (
   <pre
@@ -39,7 +39,7 @@ const ModalDefault = ({
   }
 
   const { closeModal } = useModal();
-  const isMobile = useWindowSize();
+  const isMobile = useMobile();
 
   const {
     // @ts-ignore
