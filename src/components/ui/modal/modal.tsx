@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import useModal from "@/stores/modal-store";
 import type React from "react";
 import { useEffect } from "react";
-import { ChatContainer } from "../../../app/channel/_components/chat-container";
+import { ChatContainer } from "../../../app/channel/_components/chat-container2";
 
 export const MODAL_Z_INDEX = 50;
 export const MODAL_SIZE: Record<ModalSize, string> = {

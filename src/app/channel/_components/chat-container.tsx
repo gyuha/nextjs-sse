@@ -1,31 +1,34 @@
-"use client";
+"use client"
 
-import { ChannelHeader } from "./channel-header";
-import { ChannelList } from "./channel-list";
-import { MessageArea } from "./message-area";
-import { MessageInput } from "./message-input";
+import { MessageList } from "./message-list"
+import { useMobile } from "@/hooks/use-mobile"
+import { useState } from "react"
+import { ChatSidebar } from "./chat-sidebar"
+import { ChatHeader } from "./chat-header"
+import { ChatInput } from "./chat-input"
+import { MessageArea } from "./message-area"
 
-export function ChatContainer() {
+export default function ChatContainer() {
+  const isMobile = useMobile()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen)
+  }
 
   return (
-    <div className="flex h-screen bg-neutral-50 text-neutral-900">
-      {/* Left sidebar */}
-      <div className="w-64 border-r border-neutral-200 flex flex-col">
-        <div className="p-4 border-b border-neutral-200">
-          <h1 className="text-xl font-bold">Channels</h1>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto">
-          <ChannelList />
-        </div>
-      </div>
+    <div className="flex h-screen bg-gray-50">
+      <ChatSidebar
+        isOpen={sidebarOpen}
+        setIsOpen={setSidebarOpen}
+      />
 
-      {/* Right chat area */}
-      <div className="flex-1 flex flex-col">
-        <ChannelHeader />
+      <div className="flex flex-col flex-1 h-full overflow-hidden">
+        <ChatHeader toggleSidebar={toggleSidebar} />
         <MessageArea />
-        <MessageInput />
+        <ChatInput />
       </div>
     </div>
-  );
+  )
 }
