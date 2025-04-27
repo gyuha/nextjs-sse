@@ -8,7 +8,7 @@ import type React from "react";
 
 const effect = {
   hidden: {
-    y: "-2vh",
+    y: "-1vh",
     scale: 0.9,
     opacity: 0,
   },
@@ -22,7 +22,7 @@ const effect = {
     },
   },
   exit: {
-    y: "2vh",
+    y: "1vh",
     scale: 0.9,
     opacity: 0,
     transition: {
@@ -45,7 +45,6 @@ const ModalContainer = ({
 }: IModalContainerProps): React.JSX.Element | null => {
   const isMobile = useMobileDetection();
   const { modalCount } = useModal();
-  console.log("📢[modal-container.tsx:46]: isMobile: ", isMobile);
 
   return (
     <motion.div
@@ -58,9 +57,9 @@ const ModalContainer = ({
         className || "gap-6 bg-white shadow"
       )}
       style={{ width: MODAL_SIZE[size || "md"] }}
-      animate={{ opacity: modalCount() ? 1 : 0 }}
       variants={effect}
       initial="hidden"
+      animate="visible"
       exit="exit"
       onClick={(event) => event.stopPropagation()}
     >

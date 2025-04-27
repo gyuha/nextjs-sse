@@ -10,10 +10,13 @@ import FocusLock from "react-focus-lock";
 // REF : https://gist.github.com/magalhaespaulo/737a5c35048c18b8a2209d8a9fae977c - tailwind with framer-motion
 
 const Modals = () => {
-  const { modals, closeModal, focusLockDisabled } = useModal();
+  const { modals, closeModal, focusLockDisabled, modalCount } = useModal();
 
   const handleKeyUp = useCallback(
     (e: KeyboardEvent) => {
+      if (focusLockDisabled || modalCount() === 0) {
+        return;
+      }
       if (e.key === "Escape") {
         if (
           modals.length > 0 &&
@@ -36,10 +39,12 @@ const Modals = () => {
 
   return (
     <ModalBackdrop zIndex={MODAL_Z_INDEX}>
-      <AnimatePresence initial={false}>
+      <AnimatePresence initial={false} mode="wait">
         {modals.map((modalProps, idx) => {
+          // 모달에 id가 있으면 그것을 사용하고, 없으면 인덱스를 사용
+          const modalKey = modalProps.id || `modal-${idx}`;
           return (
-            <Modal.Ground key={`${uuid()}-${idx}`}>
+            <Modal.Ground key={modalKey}>
               <Modal {...modalProps} />
             </Modal.Ground>
           );
