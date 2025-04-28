@@ -1,4 +1,5 @@
-import { DEFAULT_CHANNEL_ID, type Channel, type ChannelEventType, type User } from "@/types";
+import type { Channel, ChannelEventType } from "@/types";
+import { DEFAULT_CHANNEL_ID } from "@/types";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { BaseSSEManager } from "./base-sse-manager";
@@ -89,7 +90,10 @@ export class ChannelConnectionManager extends BaseSSEManager {
     return false;
   }
 
-  public updateUserCount(channelId: string, userCount: number): Channel | undefined {
+  public updateUserCount(
+    channelId: string,
+    userCount: number
+  ): Channel | undefined {
     const channel = this.channels.get(channelId);
     if (channel) {
       channel.userCount = userCount;
