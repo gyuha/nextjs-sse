@@ -2,7 +2,7 @@ import type { Message, User, UserEvent } from "@/types";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { ChannelConnectionManager } from "@/app/api/sse/route";
-import { BaseSSEManager } from "../base-sse-manager";
+import { BaseSSEManager } from "../../base-sse-manager";
 
 const channelManager = ChannelConnectionManager.getInstance();
 
