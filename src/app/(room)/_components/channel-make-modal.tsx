@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { useChannelContext } from "./channel-provider";
+import { set } from "date-fns";
 
 const FormSchema = z.object({
   channelName: z.string().min(2, {
@@ -44,7 +45,6 @@ const ChannelMakeModal: React.FC<{
 }> = ({ triggerProps }) => {
   const [open, setOpen] = useState(false);
   const { channels } = useChannelContext();
-  const { closeModal } = useModal();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -61,7 +61,7 @@ const ChannelMakeModal: React.FC<{
     // 여기서 채널 생성 로직을 구현할 수 있습니다
     // ...
 
-    closeModal();
+    setOpen(false); // 모달 닫기
   };
 
   return (
