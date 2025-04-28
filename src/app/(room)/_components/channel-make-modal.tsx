@@ -19,6 +19,16 @@ import useModal from "@/stores/modal-store";
 import { faker } from "@faker-js/faker/locale/ko";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useState } from "react";
+import { useChannelContext } from "./channel-provider";
 
 const FormSchema = z.object({
   channelName: z.string().min(2, {
@@ -29,12 +39,11 @@ const FormSchema = z.object({
   }),
 });
 
-// 필요한 props만 정의
-type ChannelMakeModalProps = {
-  channels?: Channel[];
-};
-
-export const ChannelMakeModalWithContext: React.FC<ChannelMakeModalProps> = ({ channels = [] }) => {
+const ChannelMakeModal: React.FC<{
+  triggerProps: React.ComponentProps<typeof DialogTrigger>;
+}> = ({ triggerProps }) => {
+  const [open, setOpen] = useState(false);
+  const { channels } = useChannelContext();
   const { closeModal } = useModal();
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -48,75 +57,76 @@ export const ChannelMakeModalWithContext: React.FC<ChannelMakeModalProps> = ({ c
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
     console.log("제출된 데이터:", data);
     console.log("현재 채널 목록:", channels);
-    
+
     // 여기서 채널 생성 로직을 구현할 수 있습니다
     // ...
-    
+
     closeModal();
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* 현재 채널 목록 표시 */}
-      <div className="mb-4">
-        <h3 className="text-sm font-medium mb-2">현재 채널 목록</h3>
-        <ScrollArea className="h-24 rounded-md border p-2">
-          <div className="flex flex-wrap gap-2">
-            {channels.map((channel) => (
-              <Badge key={channel.id} variant="outline">
-                {channel.name || channel.id}
-              </Badge>
-            ))}
-          </div>
-        </ScrollArea>
-      </div>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger {...triggerProps} />
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>채팅방 생성</DialogTitle>
+        </DialogHeader>
+        {/* 현재 채널 목록 표시 */}
+        <div className="mb-4">
+          <h3 className="text-sm font-medium mb-2">현재 채널 목록</h3>
+          <ScrollArea className="h-24 rounded-md border p-2">
+            <div className="flex flex-wrap gap-2">
+              {channels.map((channel) => (
+                <Badge key={channel.id} variant="outline">
+                  {channel.name || channel.id}
+                </Badge>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
 
-      {/* 채널 생성 폼 */}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="channelName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>채널 이름</FormLabel>
-                <FormControl>
-                  <Input placeholder="새 채널 이름 입력" {...field} />
-                </FormControl>
-                <FormDescription>
-                  생성할 채널의 이름을 입력하세요
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>이름</FormLabel>
-                <FormControl>
-                  <Input placeholder="사용자 이름 입력" {...field} />
-                </FormControl>
-                <FormDescription>
-                  채널에서 사용할 이름
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button className="w-full" type="submit">채널 생성 및 입장</Button>
-        </form>
-      </Form>
-    </div>
+        {/* 채널 생성 폼 */}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="channelName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>채널 이름</FormLabel>
+                  <FormControl>
+                    <Input placeholder="새 채널 이름 입력" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    생성할 채널의 이름을 입력하세요
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>이름</FormLabel>
+                  <FormControl>
+                    <Input placeholder="사용자 이름 입력" {...field} />
+                  </FormControl>
+                  <FormDescription>채널에서 사용할 이름</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button className="w-full" type="submit">
+              채널 생성 및 입장
+            </Button>
+          </form>
+        </Form>
+        <DialogFooter>{/* Footer */}</DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
-};
-
-// 내부적으로 사용할 기본 컴포넌트도 남겨두어 호환성 유지
-const ChannelMakeModal = (): React.JSX.Element => {
-  const { channels = [] } = {}; // 기본값 설정
-  return <ChannelMakeModalWithContext channels={channels} />;
 };
 
 export default ChannelMakeModal;
