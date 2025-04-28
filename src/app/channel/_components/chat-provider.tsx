@@ -1,4 +1,5 @@
 "use client";
+import { useChannelContext } from "@/app/(room)/_components/channel-provider";
 import type {
   Channel,
   ConnectionStatus,
@@ -44,6 +45,7 @@ interface ChattingProviderProps {
 export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   children,
 }: ChattingProviderProps) => {
+  const { channels } = useChannelContext();
   const [channelId, setChannelId] = useState<string>("general");
   const [name, setName] = useState<string>(
     "Guest_" + Math.floor(Math.random() * 1000)
@@ -63,13 +65,6 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   const retryCountRef = useRef<number>(0);
   // 최대 재시도 횟수
   const MAX_RETRY_COUNT = 3;
-
-  const channels: Channel[] = [
-    { id: "general", name: "General" },
-    { id: "random", name: "Random" },
-    { id: "support", name: "Support" },
-    { id: "team", name: "Team" },
-  ];
 
   const directMessages: DirectMessage[] = [
     { id: "user1", name: "John Doe", online: true, initial: "JD" },
