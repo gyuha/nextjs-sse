@@ -45,12 +45,8 @@ interface ChattingProviderProps {
 export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   children,
 }: ChattingProviderProps) => {
-  const { channels } = useChannelContext();
+  const { channels, username, userId } = useChannelContext();
   const [channelId, setChannelId] = useState<string>("general");
-  const [name, setName] = useState<string>(
-    "Guest_" + Math.floor(Math.random() * 1000)
-  );
-  const [userId, setUserId] = useState<string>(crypto.randomUUID());
   const [messages, setMessages] = useState<Message[]>([]);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
@@ -66,10 +62,6 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   // 최대 재시도 횟수
   const MAX_RETRY_COUNT = 3;
 
-  const directMessages: DirectMessage[] = [
-    { id: "user1", name: "John Doe", online: true, initial: "JD" },
-    { id: "user2", name: "Jane Smith", online: false, initial: "JS" },
-  ];
 
   // 채널별 SSE 연결 생성
   const createSSEConnection = useCallback(
@@ -85,7 +77,7 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
           `/api/sse/channel/${targetChannelId}`,
           window.location.origin
         );
-        url.searchParams.append("userName", name);
+        url.searchParams.append("userName", username);
         url.searchParams.append("userId", userId);
 
         // 새 이벤트 소스 생성
