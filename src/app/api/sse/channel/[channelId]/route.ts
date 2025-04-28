@@ -2,20 +2,17 @@ import type { Message, User, UserEvent } from "@/types";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { ChannelConnectionManager } from "@/app/api/sse/route";
+import { BaseSSEManager } from "../base-sse-manager";
 
 const channelManager = ChannelConnectionManager.getInstance();
 
 // 채널별 SSE 연결을 관리하는 클래스
-class SSEMessageManager {
+export class SSEMessageManager extends BaseSSEManager {
   private static instance: SSEMessageManager;
-  private channelControllers: Map<
-    string,
-    Set<ReadableStreamController<unknown>>
-  >;
   private channelUsers: Map<string, Map<string, User>>; // 채널별 접속 사용자 관리
 
   private constructor() {
-    this.channelControllers = new Map();
+    super(); // 베이스 클래스 생성자 호출
     this.channelUsers = new Map();
   }
 
@@ -33,19 +30,17 @@ class SSEMessageManager {
     controller: ReadableStreamController<Uint8Array>,
     user: User
   ): void {
-    if (!this.channelControllers.has(channelId)) {
-      this.channelControllers.set(channelId, new Set());
+    if (!this.controllers.has(channelId)) {
+      this.controllers.set(channelId, new Set());
     }
 
-    this.channelControllers.get(channelId)?.add(controller);
+    this.controllers.get(channelId)?.add(controller);
 
     // 사용자 추가
     this.addUserToChannel(channelId, user);
 
     console.log(
-      `새 연결 등록됨. 채널: ${channelId}, 사용자: ${
-        user.name
-      }, 현재 연결 수: ${this.getChannelConnectionCount(channelId)}`
+      `새 연결 등록됨. 채널: ${channelId}, 사용자: ${user.name}, 현재 연결 수: ${this.getConnectionCount(channelId)}`
     );
 
     // 사용자 접속 이벤트 브로드캐스트
@@ -62,34 +57,28 @@ class SSEMessageManager {
     controller: ReadableStreamController<Uint8Array>,
     userId?: string
   ): void {
-    const controllers = this.channelControllers.get(channelId);
-    if (controllers) {
-      controllers.delete(controller);
+    const isChannelEmpty = this.removeControllerFromMap(channelId, controller);
 
-      // 사용자 ID가 제공되었다면 해당 사용자 제거 및 이벤트 전송
-      if (userId) {
-        const user = this.removeUserFromChannel(channelId, userId);
-        if (user) {
-          this.broadcastUserEvent(channelId, {
-            type: "leave",
-            user,
-            channelId,
-          });
-        }
+    // 사용자 ID가 제공되었다면 해당 사용자 제거 및 이벤트 전송
+    if (userId) {
+      const user = this.removeUserFromChannel(channelId, userId);
+      if (user) {
+        this.broadcastUserEvent(channelId, {
+          type: "leave",
+          user,
+          channelId,
+        });
       }
+    }
 
-      console.log(
-        `연결 종료됨. 채널: ${channelId}, 현재 연결 수: ${this.getChannelConnectionCount(
-          channelId
-        )}`
-      );
+    console.log(
+      `연결 종료됨. 채널: ${channelId}, 현재 연결 수: ${this.getConnectionCount(channelId)}`
+    );
 
-      // 채널에 연결이 하나도 없으면 Map에서 제거
-      if (controllers.size === 0) {
-        this.channelControllers.delete(channelId);
-        this.channelUsers.delete(channelId); // 사용자 목록도 제거
-        console.log(`채널 ${channelId}에 연결이 없어 채널 정리됨`);
-      }
+    // 채널이 비었다면 채널 사용자 목록도 제거
+    if (isChannelEmpty) {
+      this.channelUsers.delete(channelId);
+      console.log(`채널 ${channelId}에 연결이 없어 채널 정리됨`);
     }
   }
 
@@ -137,33 +126,9 @@ class SSEMessageManager {
     });
   }
 
-  // 특정 채널의 모든 클라이언트에 메시지 전송
+  // 특정 채널의 모든 클라이언트에 메시지 전송 (베이스 클래스 메서드 활용)
   public broadcastToChannel(channelId: string, data: any): void {
-    const controllers = this.channelControllers.get(channelId);
-    if (!controllers || controllers.size === 0) {
-      console.log(`채널 ${channelId}에 활성 연결이 없습니다.`);
-      return;
-    }
-
-    // SSE 형식에 맞춘 메시지 포맷팅
-    const message = `data: ${JSON.stringify(data)}\n\n`;
-    const encoded = new TextEncoder().encode(message);
-
-    console.log(
-      `채널 ${channelId}로 메시지 브로드캐스트: ${JSON.stringify(data)}`
-    );
-    console.log(
-      `채널 ${channelId}의 현재 연결된 클라이언트 수: ${controllers.size}`
-    );
-
-    for (const controller of controllers) {
-      try {
-        controller.enqueue(encoded);
-      } catch (error) {
-        console.error(`채널 ${channelId} 메시지 전송 중 오류 발생:`, error);
-        this.removeController(channelId, controller);
-      }
-    }
+    this.broadcastToControllers(channelId, data);
   }
 
   // 채널의 사용자 목록 반환
@@ -174,23 +139,14 @@ class SSEMessageManager {
     return Array.from(userMap.values());
   }
 
-  // 현재 특정 채널의 연결 수 반환
+  // 채널 연결 수 반환 (베이스 클래스의 메서드 사용)
   public getChannelConnectionCount(channelId: string): number {
-    return this.channelControllers.get(channelId)?.size || 0;
+    return this.getConnectionCount(channelId);
   }
 
-  // 전체 채널 목록 반환
+  // 전체 채널 목록 반환 (베이스 클래스의 메서드 사용)
   public getChannels(): string[] {
-    return Array.from(this.channelControllers.keys());
-  }
-
-  // 전체 연결 수 반환
-  public get totalConnectionCount(): number {
-    let count = 0;
-    for (const controllers of this.channelControllers.values()) {
-      count += controllers.size;
-    }
-    return count;
+    return this.getKeys();
   }
 }
 
