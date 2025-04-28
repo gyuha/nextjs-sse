@@ -8,9 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function ChatChannelEntry() {
-  return (
-    <ChannelProvider>
-      <ChannelContainer />
-    </ChannelProvider>
-  );
+  return <ChannelContainer />;
 }
