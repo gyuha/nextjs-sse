@@ -3,7 +3,7 @@
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMobile } from "@/hooks/use-mobile";
-import { useChattingProvider } from "./chat-provider";
+import { useChattingContext } from "./chat-provider";
 import {
   Popover,
   PopoverContent,
@@ -18,7 +18,7 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ toggleSidebar }: ChatHeaderProps) {
   const { channelId, channels, connectionCount, channelUsers } =
-    useChattingProvider();
+    useChattingContext();
   const isMobile = useMobile();
 
   // 채널 이름 가져오기

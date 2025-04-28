@@ -8,6 +8,7 @@ import type {
   User,
 } from "@/types";
 import type React from "react";
+import { use } from 'react';
 import {
   createContext,
   useContext,
@@ -20,9 +21,8 @@ import {
 interface ChattingProviderState {
   channelId: string;
   channels: Channel[];
-  directMessages: DirectMessage[];
   messages: Message[];
-  name: string;
+  username: string;
   userId: string;
   connectionStatus: "disconnected" | "connecting" | "connected";
   channelUsers: User[];
@@ -31,7 +31,6 @@ interface ChattingProviderState {
 
 interface ChattingContextType extends ChattingProviderState {
   setChannelId: React.Dispatch<React.SetStateAction<string>>;
-  setName: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const ChattingContext = createContext<ChattingContextType | undefined>(
@@ -157,7 +156,7 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
             eventSource.close();
 
             const retryDelay = Math.min(
-              1000 * Math.pow(2, retryCountRef.current),
+              1000 * (retryCountRef.current ** 2),
               10000
             );
             console.log(
@@ -187,14 +186,14 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
         return null;
       }
     },
-    [channelId, name, userId]
+    [channelId]
   );
 
   // 채널 변경 시 SSE 연결 관리
   useEffect(() => {
     // 기존 SSE 연결 정리
     if (eventSourceRef.current) {
-      console.log(`기존 SSE 연결 종료 중...`);
+      console.log('기존 SSE 연결 종료 중...');
       eventSourceRef.current.close();
       eventSourceRef.current = null;
     }
@@ -221,7 +220,7 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
     // 클린업 함수
     return () => {
       if (eventSourceRef.current) {
-        console.log(`컴포넌트 언마운트: SSE 연결 정리 중...`);
+        console.log('컴포넌트 언마운트: SSE 연결 정리 중...');
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }
@@ -238,12 +237,10 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
       value={{
         channelId,
         channels,
-        directMessages,
         messages,
-        name,
+        username,
         userId,
         setChannelId,
-        setName,
         connectionStatus,
         channelUsers,
         connectionCount,
@@ -254,7 +251,7 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   );
 };
 
-export const useChattingProvider = () => {
+export const useChattingContext = () => {
   const context = useContext(ChattingContext);
   if (!context) {
     throw new Error(
