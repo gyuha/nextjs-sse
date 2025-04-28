@@ -6,17 +6,16 @@ import { useState, type FormEvent } from "react";
 import { Paperclip, Send, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { faker } from "@faker-js/faker/locale/ko";
-import { useChattingProvider } from "./chat-provider";
+import { useChattingContext } from "./chat-provider";
 import { sendMessage } from "./send-message-event";
 import { Input } from "@/components/ui/input";
 
 export function ChatInput() {
   const [messageInput, setMessageInput] = useState("");
-  const [senderInput, setSenderInput] = useState(faker.person.fullName());
-  const { channelId, connectionStatus } = useChattingProvider();
+  const { channelId, connectionStatus, username } = useChattingContext();
 
   const handleSendMessage = async () => {
-    if (messageInput.trim() === "" || senderInput.trim() === "") return;
+    if (messageInput.trim() === "") return;
     if (connectionStatus !== "connected") {
       console.warn(
         "SSE 연결이 활성화되지 않았습니다. 메시지를 보낼 수 없습니다."
@@ -24,22 +23,13 @@ export function ChatInput() {
       return;
     }
 
-    await sendMessage(connectionStatus, channelId, messageInput, senderInput);
+    await sendMessage(connectionStatus, channelId, messageInput, username);
     setMessageInput("");
   };
 
   return (
     <div className="p-4 border-t border-neutral-200">
       <div className="flex items-center space-x-2">
-        <div className="shrink-0">
-          <Input
-            placeholder="이름를 입력하세요..."
-            value={senderInput}
-            onChange={(e) => setSenderInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-            className="pr-10 w-24"
-          />
-        </div>
         <div className="relative flex-1">
           <Input
             placeholder="메시지를 입력하세요..."

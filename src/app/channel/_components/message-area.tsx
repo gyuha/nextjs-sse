@@ -1,12 +1,12 @@
 "use client";
 
-import { useChattingProvider } from "@/app/channel/_components/chat-provider";
+import { useChattingContext } from "@/app/channel/_components/chat-provider";
 import { useEffect, useRef } from "react";
 import { MessageItem } from "./message-item";
 
 export function MessageArea() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { channelId, messages } = useChattingProvider();
+  const { channelId, messages } = useChattingContext();
 
   // 메시지가 추가될 때마다 스크롤 맨 아래로 이동
   useEffect(() => {

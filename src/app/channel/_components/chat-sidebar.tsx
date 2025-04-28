@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Hash, X } from "lucide-react";
-import { useChattingProvider } from "./chat-provider";
+import { useChattingContext } from "./chat-provider";
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -13,7 +13,7 @@ interface ChatSidebarProps {
 }
 
 export function ChatSidebar({ isOpen, setIsOpen }: ChatSidebarProps) {
-  const { channelId, setChannelId, channels } = useChattingProvider();
+  const { channelId, setChannelId, channels } = useChattingContext();
   const isMobile = useMobile();
 
   const sidebarClasses = isMobile

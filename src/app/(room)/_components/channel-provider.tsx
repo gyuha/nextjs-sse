@@ -39,7 +39,7 @@ export const ChannelProvider: React.FC<ChannelProviderProps> = ({
   children,
 }: ChannelProviderProps) => {
   const [currentChannelId, setCurrentChannelId] =
-    useState<string>(DEFAULT_CHANNEL_ID);
+    useState<string>('');
   const [username, setUsername] = useState<string>(faker.person.fullName());
   const [userId, setUserId] = useState<string>(crypto.randomUUID());
   const [channels, setChannels] = useState<Channel[]>([]);

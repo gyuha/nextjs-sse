@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DEFAULT_CHANNEL_ID } from "@/types";
 import { MessageSquare, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from 'react';
+import { useEffect, useState } from "react";
 import ChannelMakeButton from "./channel-make-button";
 import { useChannelContext } from "./channel-provider";
 
@@ -27,7 +28,10 @@ const ChannelContainer = (): React.JSX.Element | null => {
   } = useChannelContext();
   const router = useRouter();
   const [error, setError] = useState("");
-  const [newRoomName, setNewRoomName] = useState("");
+
+  useEffect(() => {
+    setCurrentChannelId(DEFAULT_CHANNEL_ID);
+  }, []);
 
   const handleJoin = () => {
     if (!username.trim()) {
@@ -41,13 +45,13 @@ const ChannelContainer = (): React.JSX.Element | null => {
     }
 
     setError("");
-    
+
     // 사용자 이름을 localStorage에 저장 (채팅 화면에서 사용하기 위함)
     localStorage.setItem("chatUsername", username);
     setUsername(username);
-    
+
     // 선택한 채널로 이동
-    router.push(`/channel?id=${currentChannelId}&username=${encodeURIComponent(username)}`);
+    router.push("/channel");
   };
 
   return (
@@ -58,8 +62,7 @@ const ChannelContainer = (): React.JSX.Element | null => {
           <CardDescription className="flex justify-between items-center">
             <span>채널을 선택하고 이름을 입력하여 입장하세요</span>
             <span className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              총 {totalConnectionCount}명
+              <Users className="h-4 w-4" />총 {totalConnectionCount}명
             </span>
           </CardDescription>
         </CardHeader>

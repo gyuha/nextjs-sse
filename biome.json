@@ -21,6 +21,7 @@
     "rules": {
       "recommended": true,
       "a11y": {
+        "noSvgWithoutTitle": "off",
         "useKeyWithClickEvents": "off",
         "useButtonType": "off"
       },
