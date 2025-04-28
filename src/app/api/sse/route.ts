@@ -1,19 +1,15 @@
 import { DEFAULT_CHANNEL_ID, type Channel, type ChannelEventType, type User } from "@/types";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { BaseSSEManager } from "./base-sse-manager";
 
 // Channel 연결을 관리하는 싱글톤 클래스
-export class ChannelConnectionManager {
-  // 채널 이름과 채널 사용자 수만 관리 하자.. 사용자 목록은 해당 채널 에서 관리
+export class ChannelConnectionManager extends BaseSSEManager {
   private static instance: ChannelConnectionManager;
-  private controllers: Map<
-    string,
-    Set<ReadableStreamDefaultController<unknown>>
-  >;
   private channels: Map<string, Channel>;
 
   private constructor() {
-    this.controllers = new Map();
+    super();
     this.channels = new Map();
 
     // 기본 채널 생성
@@ -43,12 +39,9 @@ export class ChannelConnectionManager {
   public removeController(
     controller: ReadableStreamController<Uint8Array>
   ): void {
-    for (const [clientId, controllers] of this.controllers) {
+    for (const [clientId, controllers] of this.controllers.entries()) {
       if (controllers.has(controller)) {
-        controllers.delete(controller);
-        if (controllers.size === 0) {
-          this.controllers.delete(clientId);
-        }
+        this.removeControllerFromMap(clientId, controller);
         break;
       }
     }
@@ -133,31 +126,21 @@ export class ChannelConnectionManager {
 
   // 모든 클라이언트에 메시지 전송
   public broadcast(channelEvent: ChannelEventType): void {
-    if (this.controllers.size === 0) {
+    if (this.totalConnectionCount === 0) {
       console.log("활성 연결이 없습니다.");
       return;
     }
 
-    // SSE 형식에 맞춘 메시지 포맷팅
-    const message = `data: ${JSON.stringify({
+    const data = {
       type: channelEvent,
       channels: this.getChannels(),
       timestamp: new Date().toISOString(),
-      connectionCount: this.connectionCount,
-    })}\n\n`;
-    const encoded = new TextEncoder().encode(message);
+      connectionCount: this.totalConnectionCount,
+    };
 
-    console.log(`현재 연결된 클라이언트 수: ${this.controllers.size}`);
-
-    for (const [clientId, controllers] of this.controllers) {
-      for (const controller of controllers) {
-        try {
-          controller.enqueue(encoded);
-        } catch (error) {
-          console.error("메시지 전송 중 오류 발생:", error);
-          this.removeController(controller);
-        }
-      }
+    // 모든 클라이언트에 브로드캐스트
+    for (const clientId of this.controllers.keys()) {
+      this.broadcastToControllers(clientId, data);
     }
   }
 
@@ -171,9 +154,9 @@ export class ChannelConnectionManager {
     return this.channels.get(channelId);
   }
 
-  // 현재 연결 수 반환
+  // 현재 연결 수 반환 (베이스 클래스의 totalConnectionCount 사용)
   public get connectionCount(): number {
-    return this.controllers.size;
+    return this.totalConnectionCount;
   }
 }
 
@@ -241,6 +224,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // 베이스 클래스의 메서드 사용
     return new NextResponse(stream, {
       headers: {
         "Content-Type": "text/event-stream",
