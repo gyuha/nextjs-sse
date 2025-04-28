@@ -30,6 +30,7 @@ import {
 import { useState } from "react";
 import { useChannelContext } from "./channel-provider";
 import { set } from "date-fns";
+import { Users } from "lucide-react";
 
 const FormSchema = z.object({
   channelName: z.string().min(2, {
@@ -55,8 +56,18 @@ const ChannelMakeModal: React.FC<{
   });
 
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
-    console.log("제출된 데이터:", data);
-    console.log("현재 채널 목록:", channels);
+    // 중복된 채널 이름 확인
+    const isDuplicate = channels.some(
+      (channel) => channel.name?.toLowerCase() === data.channelName.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      form.setError("channelName", {
+        type: "manual",
+        message: "이미 존재하는 채널 이름입니다. 다른 이름을 사용해주세요.",
+      });
+      return;
+    }
 
     // 여기서 채널 생성 로직을 구현할 수 있습니다
     // ...
@@ -78,7 +89,7 @@ const ChannelMakeModal: React.FC<{
             <div className="flex flex-wrap gap-2">
               {channels.map((channel) => (
                 <Badge key={channel.id} variant="outline">
-                  {channel.name || channel.id}
+                  {channel.name || channel.id} - <Users />{channel.userCount}
                 </Badge>
               ))}
             </div>
