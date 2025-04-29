@@ -113,6 +113,11 @@ export class ChannelConnectionManager extends BaseSSEManager {
     const channel = this.channels.get(channelId);
     if (!channel) return false;
 
+    // 사용자 수가 0보다 클 때만 감소
+    if (channel.userCount && channel.userCount > 0) {
+      channel.userCount -= 1;
+    }
+
     console.log(
       `${channelId}에서 제거됨, 현재 사용자 수: ${channel.userCount}`
     );
