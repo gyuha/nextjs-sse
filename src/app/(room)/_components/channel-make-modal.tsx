@@ -53,7 +53,7 @@ const ChannelMakeModal: React.FC = () => {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof FormSchema>) => {
+  const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     // 중복된 채널 이름 확인
     const isDuplicate = channels.some(
       (channel) =>
@@ -67,6 +67,21 @@ const ChannelMakeModal: React.FC = () => {
       });
       return;
     }
+
+    const response = await fetch("/api/sse", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "createChannel",
+        channelId: data.channelName,
+        channelName: data.username,
+      }),
+    });
+    console.log('📢[channel-make-modal.tsx:71]: response: ', response);
+
+
 
     // 여기서 채널 생성 로직을 구현할 수 있습니다
     // ...
