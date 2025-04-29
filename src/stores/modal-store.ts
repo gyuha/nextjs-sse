@@ -44,15 +44,21 @@ const useModal = create<IModalStore>()(
               size: 'sm', 
               height: 'auto', 
               hideBottomButton,
-              ...(options ? { portal: options.portal, portalTarget: options.portalTarget } : {})
+              // portalTarget이 있을 때만 portal 옵션 적용
+              ...(options?.portal && options?.portalTarget ? 
+                { portal: true, portalTarget: options.portalTarget } : {})
             }
           );
           return;
         }
         
+        // portalTarget이 있을 때만 portal 옵션 적용
+        const portalOptions = options?.portal && options?.portalTarget ? 
+          { portal: true, portalTarget: options.portalTarget } : {};
+        
         const modalProps = {
           ...props,
-          ...(options ? { portal: options.portal, portalTarget: options.portalTarget } : {})
+          ...portalOptions
         };
         
         set((state) => ({ modals: [...state.modals, modalProps] }));

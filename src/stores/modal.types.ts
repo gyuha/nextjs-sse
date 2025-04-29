@@ -46,5 +46,5 @@ type ModalProps = {
   zIndex?: number;
   forcusLockDisabled?: boolean;
   portal?: boolean;
-  portalTarget?: React.RefObject<HTMLElement>;
+  portalTarget?: React.RefObject<HTMLElement> | null;
 } & (ModalAlertProps | ContentModalProps | FormModalProps | CustomModalProps);
