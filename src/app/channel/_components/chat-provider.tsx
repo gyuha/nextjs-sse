@@ -42,10 +42,6 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   children,
 }: ChattingProviderProps) => {
   const { channels, username, userId, currentChannelId } = useChannelContext();
-  console.log('📢[chat-provider.tsx:45]: currentChannelId: ', currentChannelId);
-  console.log('📢[chat-provider.tsx:48]: userId: ', userId);
-  console.log('📢[chat-provider.tsx:48]: username: ', username);
-  console.log('📢[chat-provider.tsx:48]: channels: ', channels);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [connectionStatus, setConnectionStatus] =

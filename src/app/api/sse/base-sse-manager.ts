@@ -30,6 +30,7 @@ export abstract class BaseSSEManager<T = unknown> {
   // 메시지 브로드캐스트 (공통 로직)
   protected broadcastToControllers(
     key: string,
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     data: any
   ): void {
     const controllers = this.controllers.get(key);

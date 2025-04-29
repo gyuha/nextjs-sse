@@ -76,6 +76,10 @@ export class SSEMessageManager extends BaseSSEManager {
       `연결 종료됨. 채널: ${channelId}, 현재 연결 수: ${this.getConnectionCount(channelId)}`
     );
 
+    channelManager.updateUserCount(
+      channelId, this.getChannelConnectionCount(channelId)
+    );
+
     // 채널이 비었다면 채널 사용자 목록도 제거
     if (isChannelEmpty) {
       this.channelUsers.delete(channelId);
@@ -139,7 +143,8 @@ export class SSEMessageManager extends BaseSSEManager {
   }
 
   // 특정 채널의 모든 클라이언트에 메시지 전송 (베이스 클래스 메서드 활용)
-  public broadcastToChannel(channelId: string, data: any): void {
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    public broadcastToChannel(channelId: string, data: any): void {
     this.broadcastToControllers(channelId, data);
   }
 
