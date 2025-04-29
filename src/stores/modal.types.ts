@@ -45,4 +45,6 @@ type ModalProps = {
   disabledEscKey?: boolean;
   zIndex?: number;
   forcusLockDisabled?: boolean;
+  portal?: boolean;
+  portalTarget?: React.RefObject<HTMLElement>;
 } & (ModalAlertProps | ContentModalProps | FormModalProps | CustomModalProps);

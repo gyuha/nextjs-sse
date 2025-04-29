@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import useModal from "@/stores/modal-store";
 import type React from "react";
 import { useEffect } from "react";
-import { ChatContainer } from "../../../app/channel/_components/chat-container2";
 
 export const MODAL_Z_INDEX = 50;
 export const MODAL_SIZE: Record<ModalSize, string> = {
@@ -25,6 +24,7 @@ const Modal = ({
   className,
   size = "md",
   forcusLockDisabled,
+  zIndex,
   ...rest
 }: ModalProps): React.JSX.Element | null => {
   const { setFocusLockDisabled } = useModal();
@@ -42,17 +42,17 @@ const Modal = ({
   }, [forcusLockDisabled]);
 
   if ("alert" in rest || "content" in rest) {
-    return <ModalDefault {...rest} className={className} size={size} />;
+    return <ModalDefault {...rest} className={className} size={size} zIndex={zIndex} />;
   }
 
   if ("form" in rest) {
-    return <ModalForm {...rest} className={className} size={size} />;
+    return <ModalForm {...rest} className={className} size={size} zIndex={zIndex} />;
   }
 
   if ("custom" in rest) {
     const { custom } = rest;
     return (
-      <Modal.Container className={className} size={size}>
+      <Modal.Container className={className} size={size} zIndex={zIndex}>
         {custom}
       </Modal.Container>
     );
