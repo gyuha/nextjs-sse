@@ -42,11 +42,11 @@ const ModalBackdrop = ({
   return (
     <motion.div
       className={cn(
-        "fixed inset-0 z-40 flex items-center justify-center backdrop-blur-sm",
+        "fixed inset-0 flex items-center justify-center backdrop-blur-sm",
         "bg-neutral-950 bg-opacity-60",
-        `z-${zIndex}`,
         className
       )}
+      style={{ zIndex }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

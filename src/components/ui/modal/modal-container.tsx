@@ -36,12 +36,14 @@ interface IModalContainerProps {
   className?: string;
   children: React.ReactNode;
   size?: ModalSize;
+  zIndex?: number;
 }
 
 const ModalContainer = ({
   children,
   className,
   size = "md",
+  zIndex,
 }: IModalContainerProps): React.JSX.Element | null => {
   const isMobile = useMobileDetection();
   const { modalCount } = useModal();
@@ -56,7 +58,10 @@ const ModalContainer = ({
         isMobile ? "h-full !w-full px-6" : "p-6",
         className || "gap-6 bg-white shadow"
       )}
-      style={{ width: MODAL_SIZE[size || "md"] }}
+      style={{ 
+        width: MODAL_SIZE[size || "md"],
+        zIndex: zIndex
+      }}
       variants={effect}
       initial="hidden"
       animate="visible"

@@ -11,7 +11,11 @@ interface IModalState {
 
 export interface IModalStore extends IModalState {
   modalCount: () => number;
-  openModal: (modalProp: ModalProps | string | JSX.Element, hideBottomButton?: boolean) => void;
+  openModal: (
+    modalProp: ModalProps | string | JSX.Element, 
+    hideBottomButton?: boolean, 
+    options?: { portal?: boolean; portalTarget?: React.RefObject<HTMLElement> }
+  ) => void;
   closeModal: () => void;
   closeAllModal: () => void;
   setFocusLockDisabled: (lock: boolean) => void;
@@ -28,12 +32,30 @@ const useModal = create<IModalStore>()(
     immer((set, get) => ({
       ...initialState,
       modalCount: () => get().modals.length,
-      openModal: (props: ModalProps | string | JSX.Element, hideBottomButton = false) => {
+      openModal: (
+        props: ModalProps | string | JSX.Element, 
+        hideBottomButton = false, 
+        options?: { portal?: boolean; portalTarget?: React.RefObject<HTMLElement> }
+      ) => {
         if (typeof props === 'string' || React.isValidElement(props)) {
-          get().openModal({ alert: props, size: 'sm', height: 'auto', hideBottomButton });
+          get().openModal(
+            { 
+              alert: props, 
+              size: 'sm', 
+              height: 'auto', 
+              hideBottomButton,
+              ...(options ? { portal: options.portal, portalTarget: options.portalTarget } : {})
+            }
+          );
           return;
         }
-        set((state) => ({ modals: [...state.modals, props] }));
+        
+        const modalProps = {
+          ...props,
+          ...(options ? { portal: options.portal, portalTarget: options.portalTarget } : {})
+        };
+        
+        set((state) => ({ modals: [...state.modals, modalProps] }));
       },
       closeModal: () => {
         set((state) => ({ modals: state.modals.slice(0, state.modals.length - 1) }));
