@@ -12,24 +12,26 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import { useChannelContext } from "@/app/(room)/_components/channel-provider";
 interface ChatHeaderProps {
   toggleSidebar: () => void;
 }
 
 export function ChatHeader({ toggleSidebar }: ChatHeaderProps) {
-  const { channelId, channels, connectionCount, channelUsers } =
+  const { currentChannelId, channels } = useChannelContext();
+  const { connectionCount, channelUsers } =
     useChattingContext();
   const isMobile = useMobile();
 
   // 채널 이름 가져오기
   const getCurrentChannelName = () => {
-    const channel = channels.find((c) => c.id === channelId);
+    const channel = channels.find((c) => c.id === currentChannelId);
     if (channel) return channel.name;
 
     return "Unknown";
   };
 
-  const isChannelType = channels.some((c) => c.id === channelId);
+  const isChannelType = channels.some((c) => c.id === currentChannelId);
 
   // 접속 시간 포맷팅 함수
   const formatJoinTime = (joinTime: string) => {

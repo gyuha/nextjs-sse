@@ -1,7 +1,8 @@
-import type { Message, User, UserEvent } from "@/types";
+import { ChannelConnectionManager } from "@/app/api/sse/route";
+import { DEFAULT_CHANNEL_ID, type Message, type User, type UserEvent } from "@/types";
+import { el } from "date-fns/locale";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { ChannelConnectionManager } from "@/app/api/sse/route";
 import { BaseSSEManager } from "../../base-sse-manager";
 
 const channelManager = ChannelConnectionManager.getInstance();
@@ -96,6 +97,9 @@ export class SSEMessageManager extends BaseSSEManager {
         `사용자 ${user.name}(${user.id})가 채널 ${channelId}에 추가됨`
       );
     }
+    channelManager.updateUserCount(
+      channelId, users ? users.size : 0
+    );
   }
 
   // 사용자를 채널에서 제거
@@ -113,6 +117,14 @@ export class SSEMessageManager extends BaseSSEManager {
         `사용자 ${user.name}(${userId})가 채널 ${channelId}에서 제거됨`
       );
       return user;
+    }
+
+    const users = this.channelUsers.get(channelId);
+
+    if (users && users.size === 0 && channelId !== DEFAULT_CHANNEL_ID) {
+      channelManager.removeUserFromChannel(channelId);
+    } else {
+      channelManager.updateUserCount(channelId, users ? users.size : 0);
     }
 
     return undefined;

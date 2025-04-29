@@ -290,6 +290,11 @@ export async function POST(request: NextRequest) {
         // URL에서 사용자 정보 추출
         const userName = data.userName || "익명 사용자";
 
+        channelManager.updateUserCount(
+          channelId,
+          channelManager.getConnectionCount(channelId) + 1
+        );
+
         return NextResponse.json({
           success: true,
           channel: channelManager.getChannel(channelId),

@@ -6,6 +6,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Hash, X } from "lucide-react";
 import { useChattingContext } from "./chat-provider";
+import { useChannelContext } from "@/app/(room)/_components/channel-provider";
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -13,7 +14,7 @@ interface ChatSidebarProps {
 }
 
 export function ChatSidebar({ isOpen, setIsOpen }: ChatSidebarProps) {
-  const { channelId, setChannelId, channels } = useChattingContext();
+  const { channels, currentChannelId, setCurrentChannelId} = useChannelContext();
   const isMobile = useMobile();
 
   const sidebarClasses = isMobile
@@ -47,10 +48,10 @@ export function ChatSidebar({ isOpen, setIsOpen }: ChatSidebarProps) {
               {channels.map((channel) => (
                 <li key={channel.id}>
                   <button
-                    onClick={() => setChannelId(channel.id)}
+                    onClick={() => setCurrentChannelId(channel.id)}
                     className={cn(
                       "flex items-center w-full px-3 py-2 text-sm rounded-md",
-                      channelId === channel.id
+                      currentChannelId === channel.id
                         ? "bg-gray-100 font-medium"
                         : "hover:bg-gray-50"
                     )}

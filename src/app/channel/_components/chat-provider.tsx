@@ -19,8 +19,6 @@ import {
 } from "react";
 
 interface ChattingProviderState {
-  channelId: string;
-  channels: Channel[];
   messages: Message[];
   username: string;
   userId: string;
@@ -30,7 +28,6 @@ interface ChattingProviderState {
 }
 
 interface ChattingContextType extends ChattingProviderState {
-  setChannelId: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const ChattingContext = createContext<ChattingContextType | undefined>(
@@ -44,8 +41,12 @@ interface ChattingProviderProps {
 export const ChattingProvider: React.FC<ChattingProviderProps> = ({
   children,
 }: ChattingProviderProps) => {
-  const { channels, username, userId } = useChannelContext();
-  const [channelId, setChannelId] = useState<string>("general");
+  const { channels, username, userId, currentChannelId } = useChannelContext();
+  console.log('📢[chat-provider.tsx:45]: currentChannelId: ', currentChannelId);
+  console.log('📢[chat-provider.tsx:48]: userId: ', userId);
+  console.log('📢[chat-provider.tsx:48]: username: ', username);
+  console.log('📢[chat-provider.tsx:48]: channels: ', channels);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
@@ -145,7 +146,7 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
             setConnectionStatus("connecting");
             eventSource.close();
             setTimeout(() => {
-              createSSEConnection(targetChannelId);
+              createSSEConnection(currentChannelId);
             }, 1000);
             return;
           }
@@ -167,7 +168,7 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
 
             retryTimerRef.current = setTimeout(() => {
               retryCountRef.current++;
-              createSSEConnection(targetChannelId);
+              createSSEConnection(currentChannelId);
             }, retryDelay);
           } else {
             setConnectionStatus("disconnected");
@@ -186,7 +187,7 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
         return null;
       }
     },
-    [channelId]
+    [currentChannelId]
   );
 
   // 채널 변경 시 SSE 연결 관리
@@ -213,8 +214,8 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
     setConnectionCount(0);
 
     // 새 SSE 연결 생성
-    console.log(`채널 ${channelId}에 새 SSE 연결 생성 중...`);
-    const eventSource = createSSEConnection(channelId);
+    console.log(`채널 ${currentChannelId}에 새 SSE 연결 생성 중...`);
+    const eventSource = createSSEConnection(currentChannelId);
     eventSourceRef.current = eventSource;
 
     // 클린업 함수
@@ -230,17 +231,14 @@ export const ChattingProvider: React.FC<ChattingProviderProps> = ({
         retryTimerRef.current = null;
       }
     };
-  }, [channelId, createSSEConnection]);
+  }, [currentChannelId, createSSEConnection]);
 
   return (
     <ChattingContext.Provider
       value={{
-        channelId,
-        channels,
         messages,
         username,
         userId,
-        setChannelId,
         connectionStatus,
         channelUsers,
         connectionCount,

@@ -31,6 +31,8 @@ import { useChannelContext } from "./channel-provider";
 import { set } from "date-fns";
 import { Users } from "lucide-react";
 import Modal from "@/components/ui/modal/modal";
+import { uuid } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const FormSchema = z.object({
   channelName: z.string().min(2, {
@@ -42,8 +44,10 @@ const FormSchema = z.object({
 });
 
 const ChannelMakeModal: React.FC = () => {
-  const { closeModal } = useModal();
-  const { channels } = useChannelContext();
+  const { openModal, closeAllModal } = useModal();
+  const { channels, userId, setUsername, setCurrentChannelId } =
+    useChannelContext();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -68,6 +72,8 @@ const ChannelMakeModal: React.FC = () => {
       return;
     }
 
+    const channelId = uuid();
+
     const response = await fetch("/api/sse", {
       method: "POST",
       headers: {
@@ -75,18 +81,47 @@ const ChannelMakeModal: React.FC = () => {
       },
       body: JSON.stringify({
         action: "createChannel",
-        channelId: data.channelName,
-        channelName: data.username,
+        channelId: channelId,
+        channelName: data.channelName,
       }),
     });
-    console.log('📢[channel-make-modal.tsx:71]: response: ', response);
 
+    const createChannelRes = await response.json();
 
+    if (!createChannelRes.success) {
+      openModal({
+        type: "error",
+        title: "안내",
+        content: "채널 생성에 실패했습니다.",
+      });
+      return;
+    }
+
+    setCurrentChannelId(channelId);
+    setUsername(data.username);
+
+    // 선택한 채널로 이동
+    router.push("/channel");
+
+    // const channelId = createChannelRes.channel.id;
+
+    // const joinRes = await fetch("/api/sse", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     action: "joinChannel",
+    //     channelId: channelId,
+    //     userId: userId,
+    //     userName: data.username
+    //   }),
+    // });
 
     // 여기서 채널 생성 로직을 구현할 수 있습니다
     // ...
 
-    closeModal();
+    closeAllModal();
   };
 
   return (
