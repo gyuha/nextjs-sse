@@ -120,15 +120,19 @@ export class SSEMessageManager extends BaseSSEManager {
       console.log(
         `사용자 ${user.name}(${userId})가 채널 ${channelId}에서 제거됨`
       );
+
+      // 사용자가 제거된 후 채널 사용자 수 업데이트
+      const userCount = channelUserMap.size;
+      
+      // 채널에 남은 사용자가 없고 기본 채널이 아니면 제거
+      if (userCount === 0 && channelId !== DEFAULT_CHANNEL_ID) {
+        channelManager.removeUserFromChannel(channelId);
+      } else {
+        // 채널의 사용자 수 업데이트
+        channelManager.updateUserCount(channelId, userCount);
+      }
+      
       return user;
-    }
-
-    const users = this.channelUsers.get(channelId);
-
-    if (users && users.size === 0 && channelId !== DEFAULT_CHANNEL_ID) {
-      channelManager.removeUserFromChannel(channelId);
-    } else {
-      channelManager.updateUserCount(channelId, users ? users.size : 0);
     }
 
     return undefined;
