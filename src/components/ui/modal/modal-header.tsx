@@ -8,11 +8,13 @@ import type React from 'react';
 interface IModalHeaderProps {
   children: React.ReactNode;
   hideCloseButton?: boolean;
+  className?: string;
   handleClose?: () => void;
 }
 
 const ModalHeader = ({
   children,
+  className,
   hideCloseButton,
   handleClose,
 }: IModalHeaderProps): React.JSX.Element | null => {
@@ -26,8 +28,8 @@ const ModalHeader = ({
           variant={'ghost'}
           onClick={handleClose ? handleClose : closeModal}
           className={cn(
-            'absolute z-50 w-6 min-w-0 px-0',
-            children ? 'right-10 top-10 h-[30px]' : 'right-6 top-6 h-6',
+            'absolute w-6 min-w-0 px-0 top-5',
+            children ? 'right-5 h-[30px]' : 'right-6 h-6',
           )}
         >
           <span className="sr-only">Close</span>
