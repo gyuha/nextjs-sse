@@ -1,18 +1,16 @@
 "use client";
 
-import type React from "react";
-
-import { useState, type FormEvent } from "react";
-import { Paperclip, Send, Smile } from "lucide-react";
+import { useChannelContext } from "@/app/(room)/_components/channel-provider";
 import { Button } from "@/components/ui/button";
-import { faker } from "@faker-js/faker/locale/ko";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { useChattingContext } from "./chat-provider";
 import { sendMessage } from "./send-message-event";
-import { Input } from "@/components/ui/input";
 
 export function ChatInput() {
   const [messageInput, setMessageInput] = useState("");
-  const { channelId, connectionStatus, username } = useChattingContext();
+  const { currentChannelId } = useChannelContext();
+  const { connectionStatus, username } = useChattingContext();
 
   const handleSendMessage = async () => {
     if (messageInput.trim() === "") return;
@@ -23,7 +21,7 @@ export function ChatInput() {
       return;
     }
 
-    await sendMessage(connectionStatus, channelId, messageInput, username);
+    await sendMessage(connectionStatus, currentChannelId, messageInput, username);
     setMessageInput("");
   };
 
